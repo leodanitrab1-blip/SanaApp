@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -36,40 +35,50 @@ fun EmergencyScreen(
     val isDark = currentTheme != ThemeManager.THEME_LIGHT
     val context = LocalContext.current
 
+    val bgColors = if (isDark) listOf(DarkPalette.BackgroundGradientStart, DarkPalette.BackgroundGradientEnd)
+                   else listOf(LightPalette.BackgroundGradientStart, LightPalette.BackgroundGradientEnd)
+
     Box(modifier = Modifier.fillMaxSize()) {
-        if (isDark) {
-            Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(DarkPalette.BackgroundGradientStart, DarkPalette.BackgroundGradientEnd))))
-            StarryBackground(starColor = DarkPalette.StarDim, starCount = 40)
-        } else {
-            Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(LightPalette.BackgroundGradientStart, LightPalette.BackgroundGradientEnd))))
-        }
+        Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(bgColors)))
+        if (isDark) StarryBackground(starColor = DarkPalette.StarDim, starCount = 40)
 
         Column(modifier = Modifier.fillMaxSize()) {
             TopAppBar(
                 title = { Text(text = "Líneas de Ayuda", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Volver") } },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = if (isDark) DarkPalette.ErrorContainer.copy(alpha = 0.5f) else LightPalette.ErrorContainer.copy(alpha = 0.5f))
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = if (isDark) DarkPalette.ErrorContainer.copy(alpha = 0.5f)
+                                    else LightPalette.ErrorContainer.copy(alpha = 0.5f)
+                )
             )
 
             Card(
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.ErrorContainer.copy(alpha = 0.3f) else LightPalette.ErrorContainer.copy(alpha = 0.3f))
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isDark) DarkPalette.ErrorContainer.copy(alpha = 0.3f)
+                                    else LightPalette.ErrorContainer.copy(alpha = 0.3f)
+                )
             ) {
                 Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Favorite, contentDescription = null, tint = DarkPalette.Error, modifier = Modifier.size(32.dp))
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(text = "No estás solo/a. Líneas gratuitas y confidenciales.", style = MaterialTheme.typography.bodyMedium)
+                    Text(text = "No estás solo/a. Todas estas líneas son gratuitas y confidenciales.", style = MaterialTheme.typography.bodyMedium)
                 }
             }
+
+            // Lista de contactos
+            val contactsByCountry: Map<String, List<EmergencyContactEntity>> = uiState.contacts.groupBy { it.country }
+            val countries: List<String> = contactsByCountry.keys.toList()
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
-                val contactsByCountry = uiState.contacts.groupBy { it.country }
-                contactsByCountry.forEach { (country: String, contacts: List<EmergencyContactEntity>) ->
+                countries.forEach { country: String ->
+                    val contacts: List<EmergencyContactEntity> = contactsByCountry[country] ?: emptyList()
+
                     item(key = "header_$country") {
                         Text(
                             text = country,
@@ -79,11 +88,12 @@ fun EmergencyScreen(
                             modifier = Modifier.padding(vertical = 8.dp)
                         )
                     }
+
                     items(
                         count = contacts.size,
-                        key = { index -> "contact_${country}_$index" }
-                    ) { index ->
-                        val contact = contacts[index]
+                        key = { index: Int -> "contact_${country}_$index" }
+                    ) { index: Int ->
+                        val contact: EmergencyContactEntity = contacts[index]
                         EmergencyContactCard(
                             name = contact.name,
                             phone = contact.phone,
