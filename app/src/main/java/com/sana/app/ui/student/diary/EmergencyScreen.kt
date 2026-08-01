@@ -46,8 +46,8 @@ fun EmergencyScreen(
 
         Column(modifier = Modifier.fillMaxSize()) {
             TopAppBar(
-                title = { Text("🆘 Líneas de Ayuda", fontWeight = FontWeight.Bold) },
-                navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, "Volver") } },
+                title = { Text(text = "Líneas de Ayuda", fontWeight = FontWeight.Bold) },
+                navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Volver") } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = if (isDark) DarkPalette.ErrorContainer.copy(alpha = 0.5f) else LightPalette.ErrorContainer.copy(alpha = 0.5f))
             )
 
@@ -69,7 +69,7 @@ fun EmergencyScreen(
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
                 val contactsByCountry = uiState.contacts.groupBy { it.country }
-                contactsByCountry.forEach { (country, contacts) ->
+                contactsByCountry.forEach { (country: String, contacts: List<EmergencyContactEntity>) ->
                     item(key = "header_$country") {
                         Text(
                             text = country,
@@ -79,9 +79,15 @@ fun EmergencyScreen(
                             modifier = Modifier.padding(vertical = 8.dp)
                         )
                     }
-                    items(contacts, key = { it.id }) { contact ->
+                    items(
+                        count = contacts.size,
+                        key = { index -> "contact_${country}_$index" }
+                    ) { index ->
+                        val contact = contacts[index]
                         EmergencyContactCard(
-                            contact = contact,
+                            name = contact.name,
+                            phone = contact.phone,
+                            description = contact.description ?: "",
                             isDark = isDark,
                             onCall = { context.dialPhone(contact.phone) }
                         )
@@ -94,7 +100,9 @@ fun EmergencyScreen(
 
 @Composable
 private fun EmergencyContactCard(
-    contact: EmergencyContactEntity,
+    name: String,
+    phone: String,
+    description: String,
     isDark: Boolean,
     onCall: () -> Unit
 ) {
@@ -119,20 +127,20 @@ private fun EmergencyContactCard(
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = contact.name,
+                    text = name,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = if (isDark) DarkPalette.OnSurface else LightPalette.OnSurface
                 )
-                contact.description?.let { desc ->
+                if (description.isNotEmpty()) {
                     Text(
-                        text = desc,
+                        text = description,
                         style = MaterialTheme.typography.bodySmall,
                         color = if (isDark) DarkPalette.OnSurfaceVariant else LightPalette.OnSurfaceVariant
                     )
                 }
                 Text(
-                    text = contact.phone,
+                    text = phone,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = if (isDark) DarkPalette.Primary else LightPalette.Primary
