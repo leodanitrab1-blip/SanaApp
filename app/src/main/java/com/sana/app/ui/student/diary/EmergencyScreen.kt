@@ -46,29 +46,22 @@ fun EmergencyScreen(
             TopAppBar(
                 title = { Text(text = "Líneas de Ayuda", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Volver") } },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (isDark) DarkPalette.ErrorContainer.copy(alpha = 0.5f)
-                                    else LightPalette.ErrorContainer.copy(alpha = 0.5f)
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = if (isDark) DarkPalette.ErrorContainer.copy(alpha = 0.5f) else LightPalette.ErrorContainer.copy(alpha = 0.5f))
             )
 
             Card(
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isDark) DarkPalette.ErrorContainer.copy(alpha = 0.3f)
-                                    else LightPalette.ErrorContainer.copy(alpha = 0.3f)
-                )
+                colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.ErrorContainer.copy(alpha = 0.3f) else LightPalette.ErrorContainer.copy(alpha = 0.3f))
             ) {
                 Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Favorite, contentDescription = null, tint = DarkPalette.Error, modifier = Modifier.size(32.dp))
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(text = "No estás solo/a. Todas estas líneas son gratuitas y confidenciales.", style = MaterialTheme.typography.bodyMedium)
+                    Text(text = "No estás solo/a. Líneas gratuitas y confidenciales.", style = MaterialTheme.typography.bodyMedium)
                 }
             }
 
-            // Lista de contactos
-            val contactsByCountry: Map<String, List<EmergencyContactEntity>> = uiState.contacts.groupBy { it.country }
+            val contactsByCountry: Map<String, List<EmergencyContactEntity>> = uiState.contacts.groupBy { c: EmergencyContactEntity -> c.country }
             val countries: List<String> = contactsByCountry.keys.toList()
 
             LazyColumn(
@@ -125,43 +118,16 @@ private fun EmergencyContactCard(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Surface(
-                modifier = Modifier.size(44.dp),
-                shape = RoundedCornerShape(12.dp),
-                color = DarkPalette.Error.copy(alpha = 0.15f)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.Phone, contentDescription = null, tint = DarkPalette.Error, modifier = Modifier.size(24.dp))
-                }
+            Surface(modifier = Modifier.size(44.dp), shape = RoundedCornerShape(12.dp), color = DarkPalette.Error.copy(alpha = 0.15f)) {
+                Box(contentAlignment = Alignment.Center) { Icon(Icons.Default.Phone, contentDescription = null, tint = DarkPalette.Error, modifier = Modifier.size(24.dp)) }
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = name,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isDark) DarkPalette.OnSurface else LightPalette.OnSurface
-                )
-                if (description.isNotEmpty()) {
-                    Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (isDark) DarkPalette.OnSurfaceVariant else LightPalette.OnSurfaceVariant
-                    )
-                }
-                Text(
-                    text = phone,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isDark) DarkPalette.Primary else LightPalette.Primary
-                )
+                Text(text = name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = if (isDark) DarkPalette.OnSurface else LightPalette.OnSurface)
+                if (description.isNotEmpty()) Text(text = description, style = MaterialTheme.typography.bodySmall, color = if (isDark) DarkPalette.OnSurfaceVariant else LightPalette.OnSurfaceVariant)
+                Text(text = phone, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = if (isDark) DarkPalette.Primary else LightPalette.Primary)
             }
-            Icon(
-                Icons.Default.Call,
-                contentDescription = "Llamar",
-                tint = DarkPalette.Success,
-                modifier = Modifier.size(28.dp)
-            )
+            Icon(Icons.Default.Call, contentDescription = "Llamar", tint = DarkPalette.Success, modifier = Modifier.size(28.dp))
         }
     }
 }

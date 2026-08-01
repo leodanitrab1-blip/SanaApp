@@ -1,27 +1,19 @@
-package com.sana.app.ui.student.emergency
+package com.sana.app.ui.student.diary
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sana.app.core.database.dao.EmergencyContactDao
 import com.sana.app.core.database.entities.EmergencyContactEntity
-import com.sana.app.core.network.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * 🌿 SANA - ViewModel de Líneas de Emergencia
- * 
- * Carga contactos desde BD local y sincroniza con remoto.
- */
 @HiltViewModel
 class EmergencyViewModel @Inject constructor(
-    private val emergencyContactDao: EmergencyContactDao,
-    private val apiService: ApiService
+    private val emergencyContactDao: EmergencyContactDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EmergencyUiState())
@@ -33,11 +25,8 @@ class EmergencyViewModel @Inject constructor(
 
     private fun loadContacts() {
         viewModelScope.launch {
-            // Cargar desde BD local primero
             emergencyContactDao.getAllActiveContacts().collect { contacts ->
-                if (contacts.isNotEmpty()) {
-                    _uiState.value = EmergencyUiState(contacts = contacts)
-                }
+                _uiState.value = EmergencyUiState(contacts = contacts)
             }
         }
     }
