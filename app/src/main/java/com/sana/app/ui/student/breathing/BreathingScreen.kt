@@ -72,7 +72,7 @@ fun BreathingScreen(userId: Long, onNavigateBack: () -> Unit, viewModel: Breathi
                     }
                     Spacer(modifier = Modifier.height(32.dp))
                     Text("Ronda ${uiState.currentRound} de ${uiState.totalRounds}", style = MaterialTheme.typography.titleMedium)
-                    LinearProgressIndicator(progress = { uiState.currentRound.toFloat() / uiState.totalRounds.toFloat() }, modifier = Modifier.fillMaxWidth(0.6f).height(8.dp), color = phaseColor, trackColor = if (isDark) DarkPalette.SurfaceVariant else LightPalette.SurfaceVariant)
+                    LinearProgressIndicator(progress = uiState.currentRound.toFloat() / uiState.totalRounds.toFloat(), modifier = Modifier.fillMaxWidth(0.6f).height(8.dp), color = phaseColor, trackColor = if (isDark) DarkPalette.SurfaceVariant else LightPalette.SurfaceVariant)
                     Spacer(modifier = Modifier.height(48.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                         OutlinedButton(onClick = { viewModel.stopExercise() }, shape = CircleShape, modifier = Modifier.size(64.dp)) { Icon(Icons.Default.Stop, "Parar") }
