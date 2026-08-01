@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    🌿 SANA - Reglas de Extracción de Datos
+    Android 12+ usa este archivo para backup y migración
+    
+    cloud-backup: Datos que van a la nube (Google Drive)
+    device-transfer: Datos que se transfieren entre dispositivos
+-->
+<data-extraction-rules>
+    
+    <!-- Backup en la nube -->
+    <cloud-backup>
+        <!-- Incluir todo excepto cache -->
+        <include domain="root" />
+        <exclude domain="cache" path="." />
+        <exclude domain="external" path="." />
+    </cloud-backup>
+    
+    <!-- Transferencia entre dispositivos -->
+    <device-transfer>
+        <!-- Solo datos esenciales -->
+        <include domain="database" path="." />
+        <include domain="sharedpref" path="." />
+        <include domain="file" path="diary/" />
+        
+        <!-- Excluir archivos grandes y temporales -->
+        <exclude domain="cache" path="." />
+        <exclude domain="external" path="." />
+        <exclude domain="file" path="games_cache/" />
+    </device-transfer>
+    
+</data-extraction-rules>

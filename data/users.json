@@ -1,0 +1,9 @@
+{
+  "admin": {
+    "username": "admin",
+    "password_hash": "admin123",
+    "full_name": "Administrador Sana",
+    "role": "ADMIN",
+    "access_code": "SANA-ADMIN-2025"
+  }
+}

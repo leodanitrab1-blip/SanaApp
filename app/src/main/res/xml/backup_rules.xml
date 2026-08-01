@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    🌿 SANA - Reglas de Backup
+    Controla qué datos se incluyen en el backup automático de Android
+    
+    Android 11 y anteriores usan este archivo
+    Android 12+ usa data_extraction_rules.xml
+-->
+<full-backup-content>
+    <!-- Incluir base de datos local -->
+    <include domain="database" path="." />
+    
+    <!-- Incluir preferencias de usuario -->
+    <include domain="sharedpref" path="." />
+    
+    <!-- Incluir archivos internos (diarios emocionales offline) -->
+    <include domain="file" path="." />
+    
+    <!-- Excluir archivos de cache -->
+    <exclude domain="cache" path="." />
+    
+    <!-- Excluir archivos temporales -->
+    <exclude domain="external" path="." />
+</full-backup-content>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    🌿 SANA - Configuración de Seguridad de Red
+    Define qué dominios son de confianza para HTTPS y HTTP
+    
+    IMPORTANTE:
+    - En producción, eliminar la sección de dominios HTTP
+    - Los certificados de desarrollo solo deben usarse en debug
+-->
+<network-security-config>
+    
+    <!-- Configuración base: solo HTTPS -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- Solo certificados del sistema (más seguro) -->
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    
+    <!-- Dominios que permiten HTTP (solo desarrollo) -->
+    <!-- ⚠️ ELIMINAR EN PRODUCCIÓN -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain>  <!-- Emulador localhost -->
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+    </domain-config>
+    
+    <!-- API de Groq (solo HTTPS) -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">api.groq.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+    
+    <!-- GitHub (solo HTTPS) -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">raw.githubusercontent.com</domain>
+        <domain includeSubdomains="true">api.github.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+    
+</network-security-config>

@@ -1,0 +1,97 @@
+{
+  "México": [
+    {
+      "name": "Línea de la Vida",
+      "phone": "800-911-2000",
+      "description": "Atención en crisis"
+    },
+    {
+      "name": "SAPTEL",
+      "phone": "55-5259-8121",
+      "description": "Apoyo psicológico 24/7"
+    },
+    {
+      "name": "Línea Diversa",
+      "phone": "55-5658-1111",
+      "description": "Apoyo LGBTQ+"
+    }
+  ],
+  "Argentina": [
+    {
+      "name": "Línea 135",
+      "phone": "135",
+      "description": "Atención al suicida"
+    },
+    {
+      "name": "Centro de Atención al Suicida",
+      "phone": "135",
+      "description": "Buenos Aires"
+    }
+  ],
+  "Colombia": [
+    {
+      "name": "Línea 106",
+      "phone": "106",
+      "description": "Salud mental"
+    },
+    {
+      "name": "Línea Púrpura",
+      "phone": "01-8000-112-137",
+      "description": "Mujeres víctimas de violencia"
+    }
+  ],
+  "España": [
+    {
+      "name": "Teléfono de la Esperanza",
+      "phone": "717-003-717",
+      "description": "Apoyo emocional"
+    },
+    {
+      "name": "Línea 024",
+      "phone": "024",
+      "description": "Atención a la conducta suicida"
+    }
+  ],
+  "Chile": [
+    {
+      "name": "Salud Responde",
+      "phone": "600-360-7777",
+      "description": "Orientación en salud"
+    },
+    {
+      "name": "Todo Mejora",
+      "phone": "+56-9-XXXX-XXXX",
+      "description": "Apoyo juvenil"
+    }
+  ],
+  "Perú": [
+    {
+      "name": "Línea 113",
+      "phone": "113",
+      "description": "Salud mental"
+    },
+    {
+      "name": "Teléfono de la Esperanza",
+      "phone": "01-273-8026",
+      "description": "Apoyo emocional"
+    }
+  ],
+  "Uruguay": [
+    {
+      "name": "Línea de Prevención del Suicidio",
+      "phone": "0800-0767",
+      "description": "24 horas"
+    }
+  ],
+  "Internacional": [
+    {
+      "name": "Befrienders Worldwide",
+      "url": "https://www.befrienders.org"
+    },
+    {
+      "name": "Crisis Text Line",
+      "phone": "741741",
+      "description": "Envía HOME al 741741"
+    }
+  ]
+}

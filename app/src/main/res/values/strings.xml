@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sana</string>
+    <string name="app_description">Asistente emocional y educativo</string>
+    
+    <!-- Pantalla inicial -->
+    <string name="welcome_title">Bienvenido a Sana</string>
+    <string name="welcome_subtitle">Tu espacio seguro de bienestar emocional</string>
+    <string name="btn_schools">Escuelas</string>
+    <string name="btn_user">Usuario</string>
+    <string name="btn_admin">Administrador</string>
+    
+    <!-- Login -->
+    <string name="login_title">Iniciar Sesión</string>
+    <string name="username_hint">Usuario</string>
+    <string name="password_hint">Contraseña</string>
+    <string name="code_hint">Código de acceso</string>
+    <string name="btn_login">Entrar</string>
+    
+    <!-- Dashboard -->
+    <string name="menu_chat">Chat IA</string>
+    <string name="menu_breathing">Respiración</string>
+    <string name="menu_diary">Diario</string>
+    <string name="menu_emergency">Ayuda</string>
+    <string name="menu_games">Juegos</string>
+    <string name="menu_library">Biblioteca</string>
+</resources>

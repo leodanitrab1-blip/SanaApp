@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    🌿 SANA - Rutas de archivos para FileProvider
+    Define directorios accesibles para compartir archivos entre apps
+-->
+<paths>
+    <!-- Directorio de cache (archivos temporales) -->
+    <cache-path
+        name="cache"
+        path="." />
+    
+    <!-- Directorio de archivos internos (guías, bitácoras) -->
+    <files-path
+        name="files"
+        path="." />
+    
+    <!-- Directorio de archivos externos (PDFs descargados) -->
+    <external-files-path
+        name="external_files"
+        path="." />
+    
+    <!-- Directorio de cache externo (imágenes compartidas) -->
+    <external-cache-path
+        name="external_cache"
+        path="." />
+    
+    <!-- Directorio raíz de almacenamiento externo -->
+    <root-path
+        name="root"
+        path="." />
+</paths>

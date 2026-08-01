@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tema Oscuro -->
+    <color name="dark_background">#FF0A0A1A</color>
+    <color name="dark_surface">#FF12122A</color>
+    <color name="dark_primary">#FF6C63FF</color>
+    <color name="dark_secondary">#FF00D4AA</color>
+    <color name="dark_on_background">#FFE8E8F0</color>
+    
+    <!-- Tema Claro -->
+    <color name="light_background">#FFF5F0E8</color>
+    <color name="light_surface">#FFFFFFFF</color>
+    <color name="light_primary">#FF4A7C59</color>
+    <color name="light_secondary">#FF8B6914</color>
+    <color name="light_on_background">#FF2C2416</color>
+    
+    <!-- Estados -->
+    <color name="error">#FFFF6B6B</color>
+    <color name="success">#FF4ECB71</color>
+    <color name="warning">#FFFFD93D</color>
+    <color name="ic_launcher_background">#FF0A0A1A</color>
+</resources>
