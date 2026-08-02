@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.sana.app.core.theme.ThemeManager
+import com.sana.app.core.utils.Constants
 import com.sana.app.ui.admin.AdminDashboardScreen
 import com.sana.app.ui.director.DirectorDashboardScreen
 import com.sana.app.ui.login.LoginScreen
@@ -15,15 +16,14 @@ import com.sana.app.ui.login.LoginType
 import com.sana.app.ui.login.RoleSelectionScreen
 import com.sana.app.ui.student.StudentDashboardScreen
 import com.sana.app.ui.teacher.TeacherDashboardScreen
-import javax.inject.Inject
 
 object SanaRoutes {
     const val ROLE_SELECTION = "role_selection"
     const val LOGIN = "login/{type}"
-    const val STUDENT_DASHBOARD = "student_dashboard/{userId}"
-    const val TEACHER_DASHBOARD = "teacher_dashboard/{userId}"
-    const val DIRECTOR_DASHBOARD = "director_dashboard/{userId}"
-    const val ADMIN_DASHBOARD = "admin_dashboard/{userId}"
+    const val ADMIN = "admin"
+    const val TEACHER = "teacher"
+    const val DIRECTOR = "director"
+    const val STUDENT = "student"
 }
 
 @Composable
@@ -32,6 +32,8 @@ fun SanaApp(
     navController: NavHostController = rememberNavController()
 ) {
     NavHost(navController = navController, startDestination = SanaRoutes.ROLE_SELECTION) {
+        
+        // Pantalla inicial
         composable(SanaRoutes.ROLE_SELECTION) {
             RoleSelectionScreen(
                 onNavigateToSchoolLogin = { navController.navigate(SanaRoutes.LOGIN.replace("{type}", "school")) },
@@ -41,6 +43,7 @@ fun SanaApp(
             )
         }
 
+        // Login
         composable(
             route = SanaRoutes.LOGIN,
             arguments = listOf(navArgument("type") { type = NavType.StringType })
@@ -51,10 +54,18 @@ fun SanaApp(
                 "admin" -> LoginType.ADMIN
                 else -> LoginType.SCHOOL
             }
+            
             LoginScreen(
                 loginType = loginType,
-                onLoginSuccess = { userId, _ ->
-                    navController.navigate(SanaRoutes.STUDENT_DASHBOARD.replace("{userId}", userId.toString())) {
+                onLoginSuccess = { userId, role ->
+                    // REDIRIGIR SEGÚN EL ROL REAL
+                    val route = when (role) {
+                        Constants.ROLE_ADMIN -> SanaRoutes.ADMIN
+                        Constants.ROLE_TEACHER -> SanaRoutes.TEACHER
+                        Constants.ROLE_DIRECTOR -> SanaRoutes.DIRECTOR
+                        else -> SanaRoutes.STUDENT
+                    }
+                    navController.navigate(route) {
                         popUpTo(SanaRoutes.ROLE_SELECTION) { inclusive = false }
                     }
                 },
@@ -63,36 +74,56 @@ fun SanaApp(
             )
         }
 
-        composable(
-            route = SanaRoutes.STUDENT_DASHBOARD,
-            arguments = listOf(navArgument("userId") { type = NavType.LongType })
-        ) { backStackEntry ->
-            val userId = backStackEntry.arguments?.getLong("userId") ?: return@composable
-            StudentDashboardScreen(userId = userId, onNavigateBack = { navController.popBackStack() }, themeManager = themeManager)
+        // PANEL DE ADMINISTRADOR
+        composable(SanaRoutes.ADMIN) {
+            AdminDashboardScreen(
+                userId = 0L,
+                onNavigateBack = {
+                    navController.navigate(SanaRoutes.ROLE_SELECTION) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                themeManager = themeManager
+            )
         }
 
-        composable(
-            route = SanaRoutes.TEACHER_DASHBOARD,
-            arguments = listOf(navArgument("userId") { type = NavType.LongType })
-        ) { backStackEntry ->
-            val userId = backStackEntry.arguments?.getLong("userId") ?: return@composable
-            TeacherDashboardScreen(userId = userId, onNavigateBack = { navController.popBackStack() }, themeManager = themeManager)
+        // PANEL DE DOCENTE
+        composable(SanaRoutes.TEACHER) {
+            TeacherDashboardScreen(
+                userId = 1L,
+                onNavigateBack = {
+                    navController.navigate(SanaRoutes.ROLE_SELECTION) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                themeManager = themeManager
+            )
         }
 
-        composable(
-            route = SanaRoutes.DIRECTOR_DASHBOARD,
-            arguments = listOf(navArgument("userId") { type = NavType.LongType })
-        ) { backStackEntry ->
-            val userId = backStackEntry.arguments?.getLong("userId") ?: return@composable
-            DirectorDashboardScreen(userId = userId, onNavigateBack = { navController.popBackStack() }, themeManager = themeManager)
+        // PANEL DE DIRECTOR
+        composable(SanaRoutes.DIRECTOR) {
+            DirectorDashboardScreen(
+                userId = 2L,
+                onNavigateBack = {
+                    navController.navigate(SanaRoutes.ROLE_SELECTION) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                themeManager = themeManager
+            )
         }
 
-        composable(
-            route = SanaRoutes.ADMIN_DASHBOARD,
-            arguments = listOf(navArgument("userId") { type = NavType.LongType })
-        ) { backStackEntry ->
-            val userId = backStackEntry.arguments?.getLong("userId") ?: return@composable
-            AdminDashboardScreen(userId = userId, onNavigateBack = { navController.popBackStack() }, themeManager = themeManager)
+        // PANEL DE ALUMNO
+        composable(SanaRoutes.STUDENT) {
+            StudentDashboardScreen(
+                userId = 3L,
+                onNavigateBack = {
+                    navController.navigate(SanaRoutes.ROLE_SELECTION) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                themeManager = themeManager
+            )
         }
     }
 }

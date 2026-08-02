@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -24,8 +23,6 @@ import com.sana.app.core.theme.ThemeManager
 import com.sana.app.core.utils.StarryBackground
 import kotlinx.coroutines.launch
 
-data class TeacherService(val title: String, val icon: ImageVector, val description: String, val gradientColors: List<androidx.compose.ui.graphics.Color>, val onClick: () -> Unit)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeacherDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManager: ThemeManager) {
@@ -33,36 +30,40 @@ fun TeacherDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManage
     val isDark = currentTheme != ThemeManager.THEME_LIGHT
     val scope = rememberCoroutineScope()
 
-    val services = listOf(
-        TeacherService("Bitácora", Icons.Default.EditNote, "Registro de observaciones", listOf(DarkPalette.Primary, DarkPalette.PrimaryVariant)) { },
-        TeacherService("Compartir", Icons.Default.Share, "Compartir con docentes", listOf(DarkPalette.Secondary, DarkPalette.SecondaryVariant)) { },
-        TeacherService("Guías", Icons.Default.UploadFile, "Publicar material PDF", listOf(DarkPalette.Tertiary, DarkPalette.TertiaryContainer)) { },
-        TeacherService("Planes", Icons.Default.Plumbing, "Crear planes de estudio", listOf(DarkPalette.Info, DarkPalette.InfoContainer)) { },
-        TeacherService("Buzón", Icons.Default.Mail, "Mensajes del director", listOf(DarkPalette.MoodCalm, DarkPalette.Success)) { },
-        TeacherService("Alumnos", Icons.Default.Group, "Gestionar alumnos", listOf(DarkPalette.MoodHappy, DarkPalette.Warning)) { }
-    )
-
     Box(modifier = Modifier.fillMaxSize()) {
         if (isDark) { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(DarkPalette.BackgroundGradientStart, DarkPalette.BackgroundGradientEnd)))); StarryBackground(starColor = DarkPalette.StarDim, starCount = 80) }
         else { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(LightPalette.BackgroundGradientStart, LightPalette.BackgroundGradientEnd)))) }
 
         Column(modifier = Modifier.fillMaxSize()) {
-            TopAppBar(title = { Text("📋 Panel Docente", fontWeight = FontWeight.Bold) }, navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, "Volver") } }, actions = { IconButton(onClick = { scope.launch { themeManager.toggleTheme() } }) { Icon(if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode, "Tema") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = if (isDark) DarkPalette.Surface.copy(alpha = 0.8f) else LightPalette.Surface.copy(alpha = 0.9f)))
+            TopAppBar(
+                title = { Text("👨‍🏫 Panel Docente", fontWeight = FontWeight.Bold) },
+                navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, "Volver") } },
+                actions = { IconButton(onClick = { scope.launch { themeManager.toggleTheme() } }) { Icon(if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode, "Tema") } },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = if (isDark) DarkPalette.Surface.copy(alpha = 0.8f) else LightPalette.Surface.copy(alpha = 0.9f))
+            )
 
             LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                items(services) { service ->
-                    Card(modifier = Modifier.fillMaxWidth().aspectRatio(1f).clickable(onClick = service.onClick), shape = RoundedCornerShape(20.dp), elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)) {
-                        Box(modifier = Modifier.fillMaxSize().background(Brush.horizontalGradient(colors = service.gradientColors)), contentAlignment = Alignment.Center) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(service.icon, service.title, modifier = Modifier.size(40.dp), tint = androidx.compose.ui.graphics.Color.White)
-                                Spacer(Modifier.height(8.dp))
-                                Text(service.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = androidx.compose.ui.graphics.Color.White, textAlign = TextAlign.Center)
-                                Spacer(Modifier.height(4.dp))
-                                Text(service.description, style = MaterialTheme.typography.bodySmall, color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.8f), textAlign = TextAlign.Center)
-                            }
-                        }
-                    }
-                }
+                item { CardService("📋 Bitácora", Icons.Default.EditNote, "Registro de observaciones", DarkPalette.Primary, DarkPalette.PrimaryVariant) { } }
+                item { CardService("🔗 Compartir", Icons.Default.Share, "Con otros docentes", DarkPalette.Secondary, DarkPalette.SecondaryVariant) { } }
+                item { CardService("📤 Guías", Icons.Default.UploadFile, "Publicar material", DarkPalette.Tertiary, DarkPalette.TertiaryContainer) { } }
+                item { CardService("🎯 Planes", Icons.Default.Plumbing, "Crear planes", DarkPalette.Info, DarkPalette.InfoContainer) { } }
+                item { CardService("📬 Buzón", Icons.Default.Mail, "Mensajes director", DarkPalette.MoodCalm, DarkPalette.Success) { } }
+                item { CardService("🧒 Primaria", Icons.Default.Toys, "Grupos y padres", DarkPalette.MoodHappy, DarkPalette.Warning) { } }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CardService(title: String, icon: ImageVector, desc: String, color1: androidx.compose.ui.graphics.Color, color2: androidx.compose.ui.graphics.Color, onClick: () -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth().aspectRatio(1f).clickable(onClick = onClick), shape = RoundedCornerShape(20.dp), elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)) {
+        Box(modifier = Modifier.fillMaxSize().background(Brush.horizontalGradient(listOf(color1, color2))), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(icon, title, modifier = Modifier.size(40.dp), tint = androidx.compose.ui.graphics.Color.White)
+                Spacer(Modifier.height(8.dp))
+                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = androidx.compose.ui.graphics.Color.White, textAlign = TextAlign.Center)
+                Spacer(Modifier.height(4.dp))
+                Text(desc, style = MaterialTheme.typography.bodySmall, color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.8f), textAlign = TextAlign.Center)
             }
         }
     }
