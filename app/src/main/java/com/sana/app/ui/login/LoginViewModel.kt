@@ -1,14 +1,12 @@
 package com.sana.app.ui.login
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.sana.app.core.repository.DataRepository
 import com.sana.app.core.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,8 +18,11 @@ class LoginViewModel @Inject constructor(
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
     init {
-        viewModelScope.launch {
+        // Inicializar base de datos local
+        try {
             dataRepository.initialize()
+        } catch (e: Exception) {
+            // Si falla, continuamos igual
         }
     }
 
@@ -32,44 +33,34 @@ class LoginViewModel @Inject constructor(
         }
 
         val cleanCode = code.uppercase().trim()
-        _uiState.value = LoginUiState(isLoading = true)
 
-        viewModelScope.launch {
+        try {
             val user = dataRepository.findUserByCode(cleanCode)
             
             if (user != null) {
-                // Verificar que el rol coincide con el tipo de login
-                val validRole = when (loginType) {
-                    LoginType.ADMIN -> user.role == Constants.ROLE_ADMIN
-                    LoginType.SCHOOL -> user.role in listOf(Constants.ROLE_TEACHER, Constants.ROLE_DIRECTOR, Constants.ROLE_STUDENT)
-                    LoginType.USER -> true
-                }
-                
-                if (validRole) {
-                    _uiState.value = LoginUiState(
-                        isSuccess = true,
-                        userId = user.code.hashCode().toLong(),
-                        userRole = user.role,
-                        userName = user.name
-                    )
-                } else {
-                    _uiState.value = LoginUiState(
-                        error = "Este código no corresponde a este tipo de acceso"
-                    )
-                }
+                _uiState.value = LoginUiState(
+                    isSuccess = true,
+                    userId = cleanCode.hashCode().toLong(),
+                    userRole = user.role,
+                    userName = user.name
+                )
             } else {
                 _uiState.value = LoginUiState(
-                    error = "Código no registrado en el sistema"
+                    error = "Código no registrado"
                 )
             }
+        } catch (e: Exception) {
+            _uiState.value = LoginUiState(
+                error = "Error al verificar. Intenta de nuevo."
+            )
         }
     }
     
     fun registerStudent(name: String): String {
-        val code = dataRepository.generateCode("STU")
-        viewModelScope.launch {
+        return try {
+            val code = dataRepository.generateCode("STU")
             dataRepository.saveUser(
-                com.sana.app.core.repository.UserRecord(
+                UserRecord(
                     code = code,
                     role = Constants.ROLE_STUDENT,
                     name = name,
@@ -77,8 +68,10 @@ class LoginViewModel @Inject constructor(
                     createdAt = java.text.SimpleDateFormat("yyyy-MM-dd").format(java.util.Date())
                 )
             )
+            code
+        } catch (e: Exception) {
+            "ERROR-XXXXXX"
         }
-        return code
     }
 
     fun clearError() {
@@ -87,7 +80,6 @@ class LoginViewModel @Inject constructor(
 }
 
 data class LoginUiState(
-    val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val error: String? = null,
     val userId: Long? = null,
