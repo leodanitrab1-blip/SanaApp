@@ -44,143 +44,167 @@ fun AdminDashboardScreen(
     val isDark = currentTheme != ThemeManager.THEME_LIGHT
     val scope = rememberCoroutineScope()
 
-    var showRegisterSchool by remember { mutableStateOf(false) }
-    var showSchoolList by remember { mutableStateOf(false) }
+    var currentScreen by remember { mutableStateOf("main") }
     var schoolName by remember { mutableStateOf("") }
     var directorName by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     var generatedCodes by remember { mutableStateOf("") }
     var schools by remember { mutableStateOf(dataRepository.getAllSchools()) }
+    var allCodes by remember { mutableStateOf("") }
 
-    if (showRegisterSchool) {
-        // REGISTRAR ESCUELA
-        Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { showRegisterSchool = false; message = ""; generatedCodes = "" }) {
-                    Icon(Icons.Default.ArrowBack, "Volver")
-                }
-                Text("Registrar Escuela", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            }
-            Spacer(Modifier.height(24.dp))
-            OutlinedTextField(value = schoolName, onValueChange = { schoolName = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Nombre de la escuela") }, shape = RoundedCornerShape(12.dp))
-            Spacer(Modifier.height(12.dp))
-            OutlinedTextField(value = directorName, onValueChange = { directorName = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Nombre del director") }, shape = RoundedCornerShape(12.dp))
-            Spacer(Modifier.height(24.dp))
-            
-            Button(onClick = {
-                if (schoolName.isNotBlank() && directorName.isNotBlank()) {
-                    try {
-                        val schoolCode = dataRepository.generateCode("ESC")
-                        val adminCode = dataRepository.generateCode("ADM")
-                        
-                        // Guardar escuela
-                        dataRepository.saveSchool(SchoolRecord(
-                            code = schoolCode,
-                            name = schoolName,
-                            adminCode = adminCode,
-                            directorName = directorName
-                        ))
-                        
-                        // Guardar director como usuario
-                        dataRepository.saveUser(UserRecord(
-                            code = adminCode,
-                            role = Constants.ROLE_DIRECTOR,
-                            name = directorName,
-                            schoolCode = schoolCode
-                        ))
-                        
-                        generatedCodes = "🏫 Escuela: $schoolCode\n👔 Director: $adminCode"
-                        message = "✅ Escuela registrada correctamente"
-                        schools = dataRepository.getAllSchools()
-                        schoolName = ""
-                        directorName = ""
-                    } catch (e: Exception) {
-                        message = "❌ Error: ${e.message}"
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (isDark) { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(DarkPalette.BackgroundGradientStart, DarkPalette.BackgroundGradientEnd)))); StarryBackground(starColor = DarkPalette.StarDim, starCount = 80) }
+        else { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(LightPalette.BackgroundGradientStart, LightPalette.BackgroundGradientEnd)))) }
+
+        when (currentScreen) {
+            "register_school" -> {
+                // PANTALLA: REGISTRAR ESCUELA
+                Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { currentScreen = "main"; message = ""; generatedCodes = "" }) {
+                            Icon(Icons.Default.ArrowBack, "Volver")
+                        }
+                        Text("Registrar Escuela", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                     }
-                } else {
-                    message = "⚠️ Completa todos los campos"
-                }
-            }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = if (isDark) DarkPalette.Primary else LightPalette.Primary)
-            ) { Text("Registrar Escuela") }
-            
-            if (message.isNotEmpty()) {
-                Spacer(Modifier.height(16.dp))
-                Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(
-                    containerColor = when {
-                        message.startsWith("✅") -> DarkPalette.SuccessContainer
-                        message.startsWith("❌") -> DarkPalette.ErrorContainer
-                        else -> DarkPalette.WarningContainer
+                    Spacer(Modifier.height(24.dp))
+                    OutlinedTextField(value = schoolName, onValueChange = { schoolName = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Nombre de la escuela") }, shape = RoundedCornerShape(12.dp))
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedTextField(value = directorName, onValueChange = { directorName = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Nombre del director") }, shape = RoundedCornerShape(12.dp))
+                    Spacer(Modifier.height(24.dp))
+                    
+                    Button(onClick = {
+                        if (schoolName.isNotBlank() && directorName.isNotBlank()) {
+                            try {
+                                val schoolCode = dataRepository.generateCode("ESC")
+                                val adminCode = dataRepository.generateCode("ADM")
+                                
+                                dataRepository.saveSchool(SchoolRecord(code = schoolCode, name = schoolName, adminCode = adminCode, directorName = directorName))
+                                dataRepository.saveUser(UserRecord(code = adminCode, role = Constants.ROLE_DIRECTOR, name = directorName, schoolCode = schoolCode))
+                                
+                                generatedCodes = "🏫 ESCUELA: $schoolCode\n👔 DIRECTOR: $adminCode"
+                                message = "✅ Escuela registrada correctamente"
+                                schools = dataRepository.getAllSchools()
+                                schoolName = ""
+                                directorName = ""
+                            } catch (e: Exception) {
+                                message = "❌ Error: ${e.message}"
+                            }
+                        } else {
+                            message = "⚠️ Completa todos los campos"
+                        }
+                    }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = if (isDark) DarkPalette.Primary else LightPalette.Primary)
+                    ) { Text("Registrar Escuela") }
+                    
+                    if (message.isNotEmpty()) {
+                        Spacer(Modifier.height(16.dp))
+                        Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(
+                            containerColor = when { message.startsWith("✅") -> DarkPalette.SuccessContainer; message.startsWith("❌") -> DarkPalette.ErrorContainer; else -> DarkPalette.WarningContainer }
+                        )) { Text(message, modifier = Modifier.padding(16.dp), fontWeight = FontWeight.Bold) }
                     }
-                )) {
-                    Text(message, modifier = Modifier.padding(16.dp), fontWeight = FontWeight.Bold)
-                }
-            }
-            
-            if (generatedCodes.isNotEmpty()) {
-                Spacer(Modifier.height(16.dp))
-                Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = DarkPalette.PrimaryContainer)) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("🔑 CÓDIGOS GENERADOS:", fontWeight = FontWeight.Bold)
-                        Spacer(Modifier.height(8.dp))
-                        Text(generatedCodes, style = MaterialTheme.typography.titleMedium)
-                        Spacer(Modifier.height(8.dp))
-                        Text("⚠️ Entrega el código ADM al director para que pueda acceder.", style = MaterialTheme.typography.bodySmall, color = DarkPalette.OnSurfaceVariant)
-                    }
-                }
-            }
-        }
-    } else if (showSchoolList) {
-        // LISTA DE ESCUELAS
-        Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { showSchoolList = false }) { Icon(Icons.Default.ArrowBack, "Volver") }
-                Text("Escuelas Registradas", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            }
-            Spacer(Modifier.height(16.dp))
-            
-            if (schools.isEmpty()) {
-                Text("No hay escuelas registradas aún.", style = MaterialTheme.typography.bodyLarge, color = DarkPalette.TextMuted)
-            } else {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(schools) { school ->
-                        Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else LightPalette.Surface)) {
+                    
+                    if (generatedCodes.isNotEmpty()) {
+                        Spacer(Modifier.height(16.dp))
+                        Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = DarkPalette.PrimaryContainer)) {
                             Column(modifier = Modifier.padding(16.dp)) {
-                                Text("🏫 ${school.name}", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                                Text("📝 Código: ${school.code}", style = MaterialTheme.typography.bodyMedium)
-                                Text("👔 Admin: ${school.adminCode}", style = MaterialTheme.typography.bodyMedium)
-                                Text("👤 Director: ${school.directorName}", style = MaterialTheme.typography.bodySmall)
+                                Text("🔑 CÓDIGOS GENERADOS:", fontWeight = FontWeight.Bold)
+                                Spacer(Modifier.height(8.dp))
+                                Text(generatedCodes, style = MaterialTheme.typography.titleMedium)
+                                Spacer(Modifier.height(8.dp))
+                                Text("⚠️ Entrega el código ADM al director.", style = MaterialTheme.typography.bodySmall, color = DarkPalette.OnSurfaceVariant)
                             }
                         }
                     }
                 }
             }
-        }
-    } else {
-        // PANTALLA PRINCIPAL ADMIN
-        Box(modifier = Modifier.fillMaxSize()) {
-            if (isDark) { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(DarkPalette.BackgroundGradientStart, DarkPalette.BackgroundGradientEnd)))); StarryBackground(starColor = DarkPalette.StarDim, starCount = 80) }
-            else { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(LightPalette.BackgroundGradientStart, LightPalette.BackgroundGradientEnd)))) }
+            
+            "view_schools" -> {
+                // PANTALLA: VER ESCUELAS
+                Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }
+                        Text("Escuelas Registradas", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    
+                    if (schools.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("No hay escuelas registradas.", style = MaterialTheme.typography.bodyLarge, color = DarkPalette.TextMuted)
+                        }
+                    } else {
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(schools) { school ->
+                                Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else LightPalette.Surface)) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text("🏫 ${school.name}", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                                        Text("📝 Código escuela: ${school.code}", style = MaterialTheme.typography.bodyMedium)
+                                        Text("👔 Código director: ${school.adminCode}", style = MaterialTheme.typography.bodyMedium)
+                                        Text("👤 Director: ${school.directorName}", style = MaterialTheme.typography.bodySmall)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            "view_codes" -> {
+                // PANTALLA: VER CÓDIGOS
+                Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }
+                        Text("Códigos de Acceso", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    
+                    val users = dataRepository.getAllUsers()
+                    if (users.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("No hay códigos registrados.", style = MaterialTheme.typography.bodyLarge, color = DarkPalette.TextMuted)
+                        }
+                    } else {
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(users) { user ->
+                                Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else LightPalette.Surface)) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text("🔑 ${user.code}", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                                        Text("👤 ${user.name}", style = MaterialTheme.typography.bodyMedium)
+                                        Text("🎭 Rol: ${user.role}", style = MaterialTheme.typography.bodySmall)
+                                        Text("✅ ${if (user.active) "Activo" else "Inactivo"}", style = MaterialTheme.typography.labelSmall, color = if (user.active) DarkPalette.Success else DarkPalette.Error)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            else -> {
+                // PANTALLA PRINCIPAL
+                Column(modifier = Modifier.fillMaxSize()) {
+                    TopAppBar(
+                        title = { Text("⚙️ Administración", fontWeight = FontWeight.Bold) },
+                        navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, "Volver") } },
+                        actions = { IconButton(onClick = { scope.launch { themeManager.toggleTheme() } }) { Icon(if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode, "Tema") } },
+                        colors = TopAppBarDefaults.topAppBarColors(containerColor = if (isDark) DarkPalette.Surface.copy(alpha = 0.8f) else LightPalette.Surface.copy(alpha = 0.9f))
+                    )
 
-            Column(modifier = Modifier.fillMaxSize()) {
-                TopAppBar(
-                    title = { Text("⚙️ Administración", fontWeight = FontWeight.Bold) },
-                    navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, "Volver") } },
-                    actions = { IconButton(onClick = { scope.launch { themeManager.toggleTheme() } }) { Icon(if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode, "Tema") } },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = if (isDark) DarkPalette.Surface.copy(alpha = 0.8f) else LightPalette.Surface.copy(alpha = 0.9f))
-                )
-
-                LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    item { ServiceCard("Registrar\nEscuela", Icons.Default.AddBusiness, "Crear nueva", listOf(DarkPalette.Primary, DarkPalette.PrimaryVariant)) { showRegisterSchool = true } }
-                    item { ServiceCard("Ver\nEscuelas", Icons.Default.ListAlt, "Lista completa", listOf(DarkPalette.Secondary, DarkPalette.SecondaryVariant)) { schools = dataRepository.getAllSchools(); showSchoolList = true } }
-                    item { ServiceCard("Códigos", Icons.Default.Key, "Ver todos", listOf(DarkPalette.Tertiary, DarkPalette.TertiaryContainer)) {
-                        val users = dataRepository.getAllUsers()
-                        generatedCodes = users.joinToString("\n") { "${it.code} → ${it.name} (${it.role})" }
-                        message = "✅ ${users.size} usuarios registrados"
-                    } }
-                    item { ServiceCard("Juegos", Icons.Default.Games, "Gestionar", listOf(DarkPalette.Info, DarkPalette.InfoContainer)) { } }
-                    item { ServiceCard("Moderar", Icons.Default.Gavel, "Contenido", listOf(DarkPalette.Warning, DarkPalette.WarningContainer)) { } }
-                    item { ServiceCard("Salir", Icons.Default.Logout, "Cerrar sesión", listOf(DarkPalette.Error, DarkPalette.ErrorContainer)) { onNavigateBack() } }
+                    LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        item { ServiceCard("Registrar\nEscuela", Icons.Default.AddBusiness, "Crear nueva escuela", DarkPalette.Primary, DarkPalette.PrimaryVariant) { currentScreen = "register_school" } }
+                        item { ServiceCard("Ver\nEscuelas", Icons.Default.ListAlt, "Lista completa", DarkPalette.Secondary, DarkPalette.SecondaryVariant) { schools = dataRepository.getAllSchools(); currentScreen = "view_schools" } }
+                        item { ServiceCard("Códigos\nde Acceso", Icons.Default.Key, "Ver todos los códigos", DarkPalette.Tertiary, DarkPalette.TertiaryContainer) { currentScreen = "view_codes" } }
+                        item { ServiceCard("Gestionar\nJuegos", Icons.Default.Games, "Subir y moderar", DarkPalette.Info, DarkPalette.InfoContainer) { message = "📦 Próximamente" } }
+                        item { ServiceCard("Moderar\nContenido", Icons.Default.Gavel, "Bitácoras y guías", DarkPalette.Warning, DarkPalette.WarningContainer) { message = "📦 Próximamente" } }
+                        item { ServiceCard("Cerrar\nSesión", Icons.Default.Logout, "Salir del panel", DarkPalette.Error, DarkPalette.ErrorContainer) { onNavigateBack() } }
+                    }
+                    
+                    if (message.isNotEmpty() && currentScreen == "main") {
+                        Spacer(Modifier.height(8.dp))
+                        Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = DarkPalette.InfoContainer)) {
+                            Text(message, modifier = Modifier.padding(16.dp))
+                        }
+                        LaunchedEffect(message) { kotlinx.coroutines.delay(2000); message = "" }
+                    }
                 }
             }
         }
@@ -188,9 +212,9 @@ fun AdminDashboardScreen(
 }
 
 @Composable
-private fun ServiceCard(title: String, icon: ImageVector, description: String, gradientColors: List<androidx.compose.ui.graphics.Color>, onClick: () -> Unit) {
+private fun ServiceCard(title: String, icon: ImageVector, description: String, color1: androidx.compose.ui.graphics.Color, color2: androidx.compose.ui.graphics.Color, onClick: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth().aspectRatio(1f).clickable(onClick = onClick), shape = RoundedCornerShape(20.dp), elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)) {
-        Box(modifier = Modifier.fillMaxSize().background(Brush.horizontalGradient(colors = gradientColors)), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.fillMaxSize().background(Brush.horizontalGradient(listOf(color1, color2))), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(icon, title, modifier = Modifier.size(40.dp), tint = androidx.compose.ui.graphics.Color.White)
                 Spacer(Modifier.height(8.dp))

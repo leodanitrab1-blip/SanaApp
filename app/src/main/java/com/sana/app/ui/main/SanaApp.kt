@@ -1,12 +1,14 @@
 package com.sana.app.ui.main
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.sana.app.core.repository.DataRepository
 import com.sana.app.core.theme.ThemeManager
 import com.sana.app.core.utils.Constants
 import com.sana.app.ui.admin.AdminDashboardScreen
@@ -33,7 +35,6 @@ fun SanaApp(
 ) {
     NavHost(navController = navController, startDestination = SanaRoutes.ROLE_SELECTION) {
         
-        // Pantalla inicial
         composable(SanaRoutes.ROLE_SELECTION) {
             RoleSelectionScreen(
                 onNavigateToSchoolLogin = { navController.navigate(SanaRoutes.LOGIN.replace("{type}", "school")) },
@@ -43,7 +44,6 @@ fun SanaApp(
             )
         }
 
-        // Login
         composable(
             route = SanaRoutes.LOGIN,
             arguments = listOf(navArgument("type") { type = NavType.StringType })
@@ -58,7 +58,6 @@ fun SanaApp(
             LoginScreen(
                 loginType = loginType,
                 onLoginSuccess = { userId, role ->
-                    // REDIRIGIR SEGÚN EL ROL REAL
                     val route = when (role) {
                         Constants.ROLE_ADMIN -> SanaRoutes.ADMIN
                         Constants.ROLE_TEACHER -> SanaRoutes.TEACHER
@@ -74,56 +73,20 @@ fun SanaApp(
             )
         }
 
-        // PANEL DE ADMINISTRADOR
         composable(SanaRoutes.ADMIN) {
-            AdminDashboardScreen(
-                userId = 0L,
-                onNavigateBack = {
-                    navController.navigate(SanaRoutes.ROLE_SELECTION) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                },
-                themeManager = themeManager
-            )
+            AdminDashboardScreen(userId = 0L, onNavigateBack = { navController.navigate(SanaRoutes.ROLE_SELECTION) { popUpTo(0) { inclusive = true } } }, themeManager = themeManager)
         }
 
-        // PANEL DE DOCENTE
         composable(SanaRoutes.TEACHER) {
-            TeacherDashboardScreen(
-                userId = 1L,
-                onNavigateBack = {
-                    navController.navigate(SanaRoutes.ROLE_SELECTION) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                },
-                themeManager = themeManager
-            )
+            TeacherDashboardScreen(userId = 1L, onNavigateBack = { navController.navigate(SanaRoutes.ROLE_SELECTION) { popUpTo(0) { inclusive = true } } }, themeManager = themeManager)
         }
 
-        // PANEL DE DIRECTOR
         composable(SanaRoutes.DIRECTOR) {
-            DirectorDashboardScreen(
-                userId = 2L,
-                onNavigateBack = {
-                    navController.navigate(SanaRoutes.ROLE_SELECTION) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                },
-                themeManager = themeManager
-            )
+            DirectorDashboardScreen(userId = 2L, onNavigateBack = { navController.navigate(SanaRoutes.ROLE_SELECTION) { popUpTo(0) { inclusive = true } } }, themeManager = themeManager)
         }
 
-        // PANEL DE ALUMNO
         composable(SanaRoutes.STUDENT) {
-            StudentDashboardScreen(
-                userId = 3L,
-                onNavigateBack = {
-                    navController.navigate(SanaRoutes.ROLE_SELECTION) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                },
-                themeManager = themeManager
-            )
+            StudentDashboardScreen(userId = 3L, onNavigateBack = { navController.navigate(SanaRoutes.ROLE_SELECTION) { popUpTo(0) { inclusive = true } } }, themeManager = themeManager)
         }
     }
 }

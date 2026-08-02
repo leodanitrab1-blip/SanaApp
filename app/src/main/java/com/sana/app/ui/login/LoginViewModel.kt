@@ -23,16 +23,26 @@ class LoginViewModel @Inject constructor(
     }
 
     fun tryLogin(code: String, loginType: LoginType) {
-        if (code.isBlank()) { _uiState.value = LoginUiState(error = "Ingresa el código"); return }
+        if (code.isBlank()) { 
+            _uiState.value = LoginUiState(error = "Ingresa el código") 
+            return 
+        }
+        
         val cleanCode = code.uppercase().trim()
-        try {
-            val user = dataRepository.findUserByCode(cleanCode)
-            if (user != null) {
-                _uiState.value = LoginUiState(isSuccess = true, userId = cleanCode.hashCode().toLong(), userRole = user.role, userName = user.name)
-            } else {
-                _uiState.value = LoginUiState(error = "Código no registrado")
-            }
-        } catch (e: Exception) { _uiState.value = LoginUiState(error = "Error al verificar") }
+        
+        // Buscar en TODOS los usuarios registrados
+        val user = dataRepository.findUserByCode(cleanCode)
+        
+        if (user != null && user.active) {
+            _uiState.value = LoginUiState(
+                isSuccess = true, 
+                userId = cleanCode.hashCode().toLong(), 
+                userRole = user.role, 
+                userName = user.name
+            )
+        } else {
+            _uiState.value = LoginUiState(error = "Código no registrado o inactivo")
+        }
     }
     
     fun registerStudent(name: String): String {
