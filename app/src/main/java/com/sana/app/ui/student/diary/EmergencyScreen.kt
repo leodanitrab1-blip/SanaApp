@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -35,99 +36,62 @@ fun EmergencyScreen(
     val isDark = currentTheme != ThemeManager.THEME_LIGHT
     val context = LocalContext.current
 
-    val bgColors = if (isDark) listOf(DarkPalette.BackgroundGradientStart, DarkPalette.BackgroundGradientEnd)
-                   else listOf(LightPalette.BackgroundGradientStart, LightPalette.BackgroundGradientEnd)
-
     Box(modifier = Modifier.fillMaxSize()) {
-        Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(bgColors)))
-        if (isDark) StarryBackground(starColor = DarkPalette.StarDim, starCount = 40)
+        if (isDark) { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(DarkPalette.BackgroundGradientStart, DarkPalette.BackgroundGradientEnd)))); StarryBackground(starColor = DarkPalette.StarDim, starCount = 40) }
+        else { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(LightPalette.BackgroundGradientStart, LightPalette.BackgroundGradientEnd)))) }
 
         Column(modifier = Modifier.fillMaxSize()) {
             TopAppBar(
-                title = { Text(text = "Líneas de Ayuda", fontWeight = FontWeight.Bold) },
-                navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Volver") } },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = if (isDark) DarkPalette.ErrorContainer.copy(alpha = 0.5f) else LightPalette.ErrorContainer.copy(alpha = 0.5f))
+                title = { Text("🆘 Líneas de Ayuda", fontWeight = FontWeight.Bold) },
+                navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, "Volver") } },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkPalette.ErrorContainer.copy(alpha = 0.6f))
             )
 
-            Card(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.ErrorContainer.copy(alpha = 0.3f) else LightPalette.ErrorContainer.copy(alpha = 0.3f))
-            ) {
+            Card(modifier = Modifier.fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = DarkPalette.Error.copy(alpha = 0.1f))) {
                 Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Favorite, contentDescription = null, tint = DarkPalette.Error, modifier = Modifier.size(32.dp))
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(text = "No estás solo/a. Líneas gratuitas y confidenciales.", style = MaterialTheme.typography.bodyMedium)
+                    Icon(Icons.Default.Favorite, null, tint = DarkPalette.Error, modifier = Modifier.size(32.dp))
+                    Spacer(Modifier.width(12.dp))
+                    Text("No estás solo/a. Todas estas líneas son gratuitas, confidenciales y disponibles 24/7.", style = MaterialTheme.typography.bodyMedium)
                 }
             }
 
-            val contactsByCountry: Map<String, List<EmergencyContactEntity>> = uiState.contacts.groupBy { c: EmergencyContactEntity -> c.country }
-            val countries: List<String> = contactsByCountry.keys.toList()
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(bottom = 16.dp)
-            ) {
-                countries.forEach { country: String ->
-                    val contacts: List<EmergencyContactEntity> = contactsByCountry[country] ?: emptyList()
-
-                    item(key = "header_$country") {
-                        Text(
-                            text = country,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isDark) DarkPalette.OnBackground else LightPalette.OnBackground,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
+            val contactsByCountry = uiState.contacts.groupBy { it.country }
+            
+            LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(bottom = 16.dp)) {
+                contactsByCountry.forEach { (country, contacts) ->
+                    item(key = "h_$country") {
+                        Text(country, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = if (isDark) DarkPalette.OnBackground else LightPalette.OnBackground, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
                     }
-
-                    items(
-                        count = contacts.size,
-                        key = { index: Int -> "contact_${country}_$index" }
-                    ) { index: Int ->
-                        val contact: EmergencyContactEntity = contacts[index]
-                        EmergencyContactCard(
-                            name = contact.name,
-                            phone = contact.phone,
-                            description = contact.description ?: "",
-                            isDark = isDark,
-                            onCall = { context.dialPhone(contact.phone) }
-                        )
+                    items(contacts, key = { "c_${it.id}" }) { contact ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth().clickable { if (contact.phone.isNotEmpty()) context.dialPhone(contact.phone) },
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else LightPalette.Surface),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Surface(modifier = Modifier.size(44.dp), shape = RoundedCornerShape(12.dp), color = DarkPalette.Error.copy(alpha = 0.15f)) {
+                                    Box(contentAlignment = Alignment.Center) { Icon(Icons.Default.Phone, null, tint = DarkPalette.Error, modifier = Modifier.size(24.dp)) }
+                                }
+                                Spacer(Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(contact.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = if (isDark) DarkPalette.OnSurface else LightPalette.OnSurface)
+                                    contact.description?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = DarkPalette.TextMuted) }
+                                    if (contact.phone.isNotEmpty()) {
+                                        Text(contact.phone, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = if (isDark) DarkPalette.Primary else LightPalette.Primary)
+                                    }
+                                    if (contact.website != null) {
+                                        Text(contact.website, style = MaterialTheme.typography.labelSmall, color = DarkPalette.Info)
+                                    }
+                                }
+                                if (contact.phone.isNotEmpty()) {
+                                    Icon(Icons.Default.Call, "Llamar", tint = DarkPalette.Success, modifier = Modifier.size(28.dp))
+                                }
+                            }
+                        }
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun EmergencyContactCard(
-    name: String,
-    phone: String,
-    description: String,
-    isDark: Boolean,
-    onCall: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onCall),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else LightPalette.Surface)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(modifier = Modifier.size(44.dp), shape = RoundedCornerShape(12.dp), color = DarkPalette.Error.copy(alpha = 0.15f)) {
-                Box(contentAlignment = Alignment.Center) { Icon(Icons.Default.Phone, contentDescription = null, tint = DarkPalette.Error, modifier = Modifier.size(24.dp)) }
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = if (isDark) DarkPalette.OnSurface else LightPalette.OnSurface)
-                if (description.isNotEmpty()) Text(text = description, style = MaterialTheme.typography.bodySmall, color = if (isDark) DarkPalette.OnSurfaceVariant else LightPalette.OnSurfaceVariant)
-                Text(text = phone, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = if (isDark) DarkPalette.Primary else LightPalette.Primary)
-            }
-            Icon(Icons.Default.Call, contentDescription = "Llamar", tint = DarkPalette.Success, modifier = Modifier.size(28.dp))
         }
     }
 }
