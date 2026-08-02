@@ -39,6 +39,7 @@ object DarkPalette {
     val Error = Color(0xFFFF6B6B)
     val ErrorContainer = Color(0xFF3D1515)
     val Success = Color(0xFF4ECB71)
+    val SuccessContainer = Color(0xFF0D3D1A)
     val Warning = Color(0xFFFFD93D)
     val WarningContainer = Color(0xFF3D3500)
     val Info = Color(0xFF5B9BD5)

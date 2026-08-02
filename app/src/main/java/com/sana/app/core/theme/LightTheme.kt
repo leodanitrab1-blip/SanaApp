@@ -38,6 +38,7 @@ object LightPalette {
     val Error = Color(0xFFC44545)
     val ErrorContainer = Color(0xFFF5D5D5)
     val Success = Color(0xFF4A8C4A)
+    val SuccessContainer = Color(0xFFD5F5D5)
     val Warning = Color(0xFFD4A843)
     val WarningContainer = Color(0xFFF5F0D5)
     val Info = Color(0xFF5B8BA5)
