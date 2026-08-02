@@ -49,66 +49,40 @@ fun LoginScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (isDark) {
-            Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(DarkPalette.BackgroundGradientStart, DarkPalette.BackgroundGradientEnd))))
-            StarryBackground(starColor = DarkPalette.StarDim, starCount = 60)
-        } else {
-            Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(LightPalette.BackgroundGradientStart, LightPalette.BackgroundGradientEnd))))
-        }
+        if (isDark) { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(DarkPalette.BackgroundGradientStart, DarkPalette.BackgroundGradientEnd)))); StarryBackground(starColor = DarkPalette.StarDim, starCount = 60) }
+        else { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(LightPalette.BackgroundGradientStart, LightPalette.BackgroundGradientEnd)))) }
 
         Column(modifier = Modifier.fillMaxSize().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(modifier = Modifier.fillMaxWidth()) {
-                IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Volver", tint = if (isDark) DarkPalette.OnBackground else LightPalette.OnBackground) }
-            }
+            Row(modifier = Modifier.fillMaxWidth()) { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Volver", tint = if (isDark) DarkPalette.OnBackground else LightPalette.OnBackground) } }
             Spacer(Modifier.weight(1f))
 
-            Text(
-                text = when (loginType) { LoginType.ADMIN -> "👑 Administrador"; LoginType.SCHOOL -> "🏫 Escuelas"; LoginType.USER -> "👤 Usuario" },
-                style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold,
-                color = if (isDark) DarkPalette.OnBackground else LightPalette.OnBackground
-            )
+            Text(when (loginType) { LoginType.ADMIN -> "👑 Administrador"; LoginType.SCHOOL -> "🏫 Escuelas"; LoginType.USER -> "👤 Usuario" }, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold, color = if (isDark) DarkPalette.OnBackground else LightPalette.OnBackground)
             Spacer(Modifier.height(8.dp))
 
             if (showRegister && loginType == LoginType.USER) {
-                // REGISTRO DE ALUMNO
                 Text("Crear cuenta de alumno", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(20.dp))
                 OutlinedTextField(value = studentName, onValueChange = { studentName = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Tu nombre completo") }, shape = RoundedCornerShape(12.dp))
                 Spacer(Modifier.height(16.dp))
-                Button(onClick = {
-                    if (studentName.isNotBlank()) {
-                        generatedCode = viewModel.registerStudent(studentName)
-                    }
-                }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) { Text("Crear cuenta") }
-                
-                if (generatedCode.isNotEmpty()) {
+                Button(onClick = { if (studentName.isNotBlank()) generatedCode = viewModel.registerStudent(studentName) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) { Text("Crear cuenta") }
+                if (generatedCode.isNotEmpty() && generatedCode != "ERROR") {
                     Spacer(Modifier.height(16.dp))
                     Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = DarkPalette.SuccessContainer)) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text("✅ ¡Cuenta creada!", fontWeight = FontWeight.Bold)
-                            Text("Tu código es:")
+                            Text("Tu código es:", style = MaterialTheme.typography.bodyMedium)
                             Text(generatedCode, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                            Text("\n⚠️ ¡Guarda este código! Lo necesitarás para entrar.")
+                            Text("\n⚠️ ¡Guarda este código!", style = MaterialTheme.typography.bodySmall)
                         }
                     }
                     Spacer(Modifier.height(12.dp))
                     TextButton(onClick = { showRegister = false; accessCode = generatedCode }) { Text("Usar este código para entrar") }
                 }
             } else {
-                // LOGIN NORMAL
-                Text(
-                    text = when (loginType) { LoginType.ADMIN -> "Código maestro"; LoginType.SCHOOL -> "Código de acceso"; LoginType.USER -> "Tu código personal" },
-                    style = MaterialTheme.typography.bodyLarge, color = if (isDark) DarkPalette.OnSurfaceVariant else LightPalette.OnSurfaceVariant
-                )
+                Text(when (loginType) { LoginType.ADMIN -> "Código maestro"; LoginType.SCHOOL -> "Código de acceso"; LoginType.USER -> "Tu código personal" }, style = MaterialTheme.typography.bodyLarge, color = if (isDark) DarkPalette.OnSurfaceVariant else LightPalette.OnSurfaceVariant)
                 Spacer(Modifier.height(40.dp))
 
-                OutlinedTextField(
-                    value = accessCode, onValueChange = { accessCode = it.uppercase(); viewModel.clearError() },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text(when (loginType) { LoginType.ADMIN -> "SANA-ADMIN-2025"; LoginType.SCHOOL -> "DOC-XXXXXX"; LoginType.USER -> "STU-XXXXXX" }) },
-                    leadingIcon = { Icon(Icons.Default.Key, null) }, singleLine = true, isError = uiState.error != null,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done), shape = RoundedCornerShape(16.dp)
-                )
+                OutlinedTextField(value = accessCode, onValueChange = { accessCode = it.uppercase(); viewModel.clearError() }, modifier = Modifier.fillMaxWidth(), placeholder = { Text(when (loginType) { LoginType.ADMIN -> "SANA-ADMIN-2025"; LoginType.SCHOOL -> "DOC-XXXXXX"; LoginType.USER -> "STU-XXXXXX" }) }, leadingIcon = { Icon(Icons.Default.Key, null) }, singleLine = true, isError = uiState.error != null, keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done), shape = RoundedCornerShape(16.dp))
 
                 if (uiState.error != null) {
                     Spacer(Modifier.height(12.dp))
@@ -118,20 +92,11 @@ fun LoginScreen(
                 }
 
                 Spacer(Modifier.height(32.dp))
-
-                Button(onClick = { focusManager.clearFocus(); viewModel.tryLogin(accessCode.trim(), loginType) },
-                    modifier = Modifier.fillMaxWidth().height(60.dp), enabled = accessCode.isNotBlank() && !uiState.isLoading,
-                    shape = RoundedCornerShape(16.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isDark) DarkPalette.Primary else LightPalette.Primary)
-                ) {
-                    if (uiState.isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp), color = androidx.compose.ui.graphics.Color.White)
-                    else { Icon(Icons.Default.Login, null, modifier = Modifier.size(24.dp)); Spacer(Modifier.width(8.dp)); Text("Ingresar", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
+                Button(onClick = { focusManager.clearFocus(); viewModel.tryLogin(accessCode.trim(), loginType) }, modifier = Modifier.fillMaxWidth().height(60.dp), enabled = accessCode.isNotBlank(), shape = RoundedCornerShape(16.dp), colors = ButtonDefaults.buttonColors(containerColor = if (isDark) DarkPalette.Primary else LightPalette.Primary)) {
+                    Icon(Icons.Default.Login, null, modifier = Modifier.size(24.dp)); Spacer(Modifier.width(8.dp)); Text("Ingresar", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 }
 
-                // Opción de registro para alumnos
-                if (loginType == LoginType.USER) {
-                    Spacer(Modifier.height(16.dp))
-                    TextButton(onClick = { showRegister = true }) { Text("¿No tienes cuenta? Regístrate aquí") }
-                }
+                if (loginType == LoginType.USER) { Spacer(Modifier.height(16.dp)); TextButton(onClick = { showRegister = true }) { Text("¿No tienes cuenta? Regístrate aquí") } }
             }
             Spacer(Modifier.weight(2f))
         }

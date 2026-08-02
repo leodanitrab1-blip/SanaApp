@@ -2,6 +2,7 @@ package com.sana.app.ui.login
 
 import androidx.lifecycle.ViewModel
 import com.sana.app.core.repository.DataRepository
+import com.sana.app.core.repository.UserRecord
 import com.sana.app.core.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,65 +19,31 @@ class LoginViewModel @Inject constructor(
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
     init {
-        // Inicializar base de datos local
-        try {
-            dataRepository.initialize()
-        } catch (e: Exception) {
-            // Si falla, continuamos igual
-        }
+        try { dataRepository.initialize() } catch (_: Exception) { }
     }
 
     fun tryLogin(code: String, loginType: LoginType) {
-        if (code.isBlank()) {
-            _uiState.value = LoginUiState(error = "Ingresa el código")
-            return
-        }
-
+        if (code.isBlank()) { _uiState.value = LoginUiState(error = "Ingresa el código"); return }
         val cleanCode = code.uppercase().trim()
-
         try {
             val user = dataRepository.findUserByCode(cleanCode)
-            
             if (user != null) {
-                _uiState.value = LoginUiState(
-                    isSuccess = true,
-                    userId = cleanCode.hashCode().toLong(),
-                    userRole = user.role,
-                    userName = user.name
-                )
+                _uiState.value = LoginUiState(isSuccess = true, userId = cleanCode.hashCode().toLong(), userRole = user.role, userName = user.name)
             } else {
-                _uiState.value = LoginUiState(
-                    error = "Código no registrado"
-                )
+                _uiState.value = LoginUiState(error = "Código no registrado")
             }
-        } catch (e: Exception) {
-            _uiState.value = LoginUiState(
-                error = "Error al verificar. Intenta de nuevo."
-            )
-        }
+        } catch (e: Exception) { _uiState.value = LoginUiState(error = "Error al verificar") }
     }
     
     fun registerStudent(name: String): String {
         return try {
             val code = dataRepository.generateCode("STU")
-            dataRepository.saveUser(
-                UserRecord(
-                    code = code,
-                    role = Constants.ROLE_STUDENT,
-                    name = name,
-                    active = true,
-                    createdAt = java.text.SimpleDateFormat("yyyy-MM-dd").format(java.util.Date())
-                )
-            )
+            dataRepository.saveUser(UserRecord(code = code, role = Constants.ROLE_STUDENT, name = name))
             code
-        } catch (e: Exception) {
-            "ERROR-XXXXXX"
-        }
+        } catch (e: Exception) { "ERROR" }
     }
 
-    fun clearError() {
-        _uiState.value = _uiState.value.copy(error = null)
-    }
+    fun clearError() { _uiState.value = _uiState.value.copy(error = null) }
 }
 
 data class LoginUiState(
