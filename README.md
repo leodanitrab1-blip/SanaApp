@@ -53,3 +53,4 @@
 1. Clona el repositorio:
 ```bash
 git clone https://github.com/tuusuario/sana-app.git
+🔄 Build trigger Sat Aug  1 23:42:13 CST 2026
