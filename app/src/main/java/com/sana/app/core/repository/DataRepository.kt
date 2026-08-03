@@ -5,38 +5,26 @@ import android.content.SharedPreferences
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
 data class UserRecord(
-    val code: String,
-    val role: String,
-    val name: String,
-    val schoolCode: String = "",
-    val active: Boolean = true,
-    val createdAt: String = ""
+    val code: String, val role: String, val name: String,
+    val schoolCode: String = "", val active: Boolean = true, val createdAt: String = ""
 )
 
 data class SchoolRecord(
-    val code: String,
-    val name: String,
-    val adminCode: String,
-    val directorName: String,
-    val active: Boolean = true
+    val code: String, val name: String, val adminCode: String,
+    val directorName: String, val teacherCount: Int = 0,
+    val teacherCodes: List<String> = emptyList(), val active: Boolean = true
 )
 
 @Singleton
-class DataRepository @Inject constructor(
-    @ApplicationContext private val context: Context
-) {
+class DataRepository @Inject constructor(@ApplicationContext private val context: Context) {
     private val gson = Gson()
     private val prefs: SharedPreferences = context.getSharedPreferences("sana_db", Context.MODE_PRIVATE)
-    
-    // ============ USUARIOS ============
     
     fun getAllUsers(): List<UserRecord> {
         val json = prefs.getString("users", "[]") ?: "[]"
@@ -48,29 +36,19 @@ class DataRepository @Inject constructor(
         val users = getAllUsers().toMutableList()
         users.removeAll { it.code == user.code }
         users.add(user)
-        saveUsers(users)
+        prefs.edit().putString("users", gson.toJson(users)).apply()
     }
     
     fun findUserByCode(code: String): UserRecord? {
-        return getAllUsers().find { it.code == code && it.active }
+        return getAllUsers().find { it.code.equals(code, ignoreCase = true) && it.active }
     }
     
     fun deactivateUser(code: String): Boolean {
         val users = getAllUsers().toMutableList()
         val index = users.indexOfFirst { it.code == code }
-        if (index >= 0) {
-            users[index] = users[index].copy(active = false)
-            saveUsers(users)
-            return true
-        }
+        if (index >= 0) { users[index] = users[index].copy(active = false); prefs.edit().putString("users", gson.toJson(users)).apply(); return true }
         return false
     }
-    
-    private fun saveUsers(users: List<UserRecord>) {
-        prefs.edit().putString("users", gson.toJson(users)).apply()
-    }
-    
-    // ============ ESCUELAS ============
     
     fun getAllSchools(): List<SchoolRecord> {
         val json = prefs.getString("schools", "[]") ?: "[]"
@@ -85,26 +63,15 @@ class DataRepository @Inject constructor(
         prefs.edit().putString("schools", gson.toJson(schools)).apply()
     }
     
-    // ============ GENERAR CÓDIGOS ============
-    
     fun generateCode(prefix: String): String {
         val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         val suffix = (1..6).map { chars[Random().nextInt(chars.length)] }.joinToString("")
         return "$prefix-$suffix"
     }
     
-    // ============ INICIALIZAR ============
-    
     fun initialize() {
-        // Crear admin si no existe
         if (findUserByCode("SANA-ADMIN-2025") == null) {
-            saveUser(UserRecord(
-                code = "SANA-ADMIN-2025",
-                role = "ADMIN",
-                name = "Administrador Sana",
-                active = true,
-                createdAt = SimpleDateFormat("yyyy-MM-dd").format(Date())
-            ))
+            saveUser(UserRecord(code = "SANA-ADMIN-2025", role = "ADMIN", name = "Administrador Sana", createdAt = SimpleDateFormat("yyyy-MM-dd").format(Date())))
         }
     }
 }
