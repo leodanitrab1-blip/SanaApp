@@ -18,22 +18,16 @@ class LoginViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    init {
-        try { dataRepository.initialize() } catch (_: Exception) { }
-    }
+    init { try { dataRepository.initialize() } catch (_: Exception) { } }
 
     fun tryLogin(code: String, loginType: LoginType) {
-        if (code.isBlank()) { 
-            _uiState.value = LoginUiState(error = "Ingresa el código") 
-            return 
-        }
+        if (code.isBlank()) { _uiState.value = LoginUiState(error = "Ingresa el código"); return }
         
         val cleanCode = code.uppercase().trim()
-        
-        // Buscar en TODOS los usuarios registrados
         val user = dataRepository.findUserByCode(cleanCode)
         
         if (user != null && user.active) {
+            // ACEPTAR cualquier rol para SCHOOL (docente, director, alumno)
             _uiState.value = LoginUiState(
                 isSuccess = true, 
                 userId = cleanCode.hashCode().toLong(), 
@@ -41,7 +35,20 @@ class LoginViewModel @Inject constructor(
                 userName = user.name
             )
         } else {
-            _uiState.value = LoginUiState(error = "Código no registrado o inactivo")
+            // Buscar también en escuelas (código ADM guardado como director)
+            val schools = dataRepository.getAllSchools()
+            val school = schools.find { it.adminCode == cleanCode }
+            if (school != null) {
+                // Es un director registrado desde admin
+                _uiState.value = LoginUiState(
+                    isSuccess = true,
+                    userId = cleanCode.hashCode().toLong(),
+                    userRole = Constants.ROLE_DIRECTOR,
+                    userName = school.directorName
+                )
+            } else {
+                _uiState.value = LoginUiState(error = "Código no registrado")
+            }
         }
     }
     

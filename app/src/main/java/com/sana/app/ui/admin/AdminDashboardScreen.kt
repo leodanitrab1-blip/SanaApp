@@ -42,13 +42,16 @@ fun AdminDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManager:
     val scope = rememberCoroutineScope()
 
     var currentScreen by remember { mutableStateOf("main") }
-    var schoolName by remember { mutableStateOf("") }
-    var directorName by remember { mutableStateOf("") }
-    var teacherCount by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf("") }
+    var schoolName by remember { mutableStateOf("") }; var directorName by remember { mutableStateOf("") }
+    var teacherCount by remember { mutableStateOf("") }; var message by remember { mutableStateOf("") }
     var generatedCodes by remember { mutableStateOf("") }
     var schools by remember { mutableStateOf(dataRepository.getAllSchools()) }
     var allUsers by remember { mutableStateOf(dataRepository.getAllUsers()) }
+    
+    // Juegos
+    var games by remember { mutableStateOf(listOf<String>()) }
+    var newGameTitle by remember { mutableStateOf("") }
+    var newGameUrl by remember { mutableStateOf("") }
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (isDark) { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(DarkPalette.BackgroundGradientStart, DarkPalette.BackgroundGradientEnd)))); StarryBackground(starColor = DarkPalette.StarDim, starCount = 80) }
@@ -57,10 +60,7 @@ fun AdminDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManager:
         when (currentScreen) {
             "register_school" -> {
                 Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(onClick = { currentScreen = "main"; message = ""; generatedCodes = "" }) { Icon(Icons.Default.ArrowBack, "Volver") }
-                        Text("Registrar Escuela", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) { IconButton(onClick = { currentScreen = "main"; message = ""; generatedCodes = "" }) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("Registrar Escuela", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
                     Spacer(Modifier.height(16.dp))
                     OutlinedTextField(value = schoolName, onValueChange = { schoolName = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Nombre de la escuela") }, shape = RoundedCornerShape(12.dp))
                     Spacer(Modifier.height(8.dp))
@@ -68,35 +68,20 @@ fun AdminDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManager:
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(value = teacherCount, onValueChange = { teacherCount = it.filter { c -> c.isDigit() } }, modifier = Modifier.fillMaxWidth(), label = { Text("Número de docentes") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), shape = RoundedCornerShape(12.dp))
                     Spacer(Modifier.height(24.dp))
-                    
                     Button(onClick = {
                         if (schoolName.isNotBlank() && directorName.isNotBlank()) {
-                            try {
-                                val schoolCode = dataRepository.generateCode("ESC")
-                                val adminCode = dataRepository.generateCode("ADM")
-                                val count = teacherCount.toIntOrNull() ?: 0
-                                val teacherCodes = mutableListOf<String>()
-                                for (i in 1..count) {
-                                    val tCode = dataRepository.generateCode("DOC")
-                                    teacherCodes.add(tCode)
-                                    dataRepository.saveUser(UserRecord(code = tCode, role = Constants.ROLE_TEACHER, name = "Docente $i", schoolCode = schoolCode))
-                                }
-                                dataRepository.saveSchool(SchoolRecord(code = schoolCode, name = schoolName, adminCode = adminCode, directorName = directorName, teacherCount = count, teacherCodes = teacherCodes))
-                                dataRepository.saveUser(UserRecord(code = adminCode, role = Constants.ROLE_DIRECTOR, name = directorName, schoolCode = schoolCode))
-                                
-                                val sb = StringBuilder()
-                                sb.appendLine("🏫 ESCUELA: $schoolCode")
-                                sb.appendLine("👔 DIRECTOR: $adminCode")
-                                if (teacherCodes.isNotEmpty()) { sb.appendLine("\n👨‍🏫 DOCENTES:"); teacherCodes.forEachIndexed { i, c -> sb.appendLine("  ${i+1}. $c") } }
-                                generatedCodes = sb.toString()
-                                message = "✅ Escuela registrada"
-                                schools = dataRepository.getAllSchools()
-                                allUsers = dataRepository.getAllUsers()
-                                schoolName = ""; directorName = ""; teacherCount = ""
-                            } catch (e: Exception) { message = "❌ Error: ${e.message}" }
+                            val schoolCode = dataRepository.generateCode("ESC"); val adminCode = dataRepository.generateCode("ADM"); val count = teacherCount.toIntOrNull() ?: 0
+                            val teacherCodes = mutableListOf<String>()
+                            for (i in 1..count) { val tCode = dataRepository.generateCode("DOC"); teacherCodes.add(tCode); dataRepository.saveUser(UserRecord(code = tCode, role = Constants.ROLE_TEACHER, name = "Docente $i", schoolCode = schoolCode)) }
+                            dataRepository.saveSchool(SchoolRecord(code = schoolCode, name = schoolName, adminCode = adminCode, directorName = directorName, teacherCount = count, teacherCodes = teacherCodes))
+                            dataRepository.saveUser(UserRecord(code = adminCode, role = Constants.ROLE_DIRECTOR, name = directorName, schoolCode = schoolCode))
+                            val sb = StringBuilder(); sb.appendLine("🏫 ESCUELA: $schoolCode"); sb.appendLine("👔 DIRECTOR: $adminCode")
+                            if (teacherCodes.isNotEmpty()) { sb.appendLine("\n👨‍🏫 DOCENTES:"); teacherCodes.forEachIndexed { i, c -> sb.appendLine("  ${i+1}. $c") } }
+                            generatedCodes = sb.toString(); message = "✅ Escuela registrada"
+                            schools = dataRepository.getAllSchools(); allUsers = dataRepository.getAllUsers()
+                            schoolName = ""; directorName = ""; teacherCount = ""
                         } else { message = "⚠️ Completa los campos" }
                     }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = DarkPalette.Primary)) { Text("Registrar y Generar Códigos") }
-                    
                     if (message.isNotEmpty()) { Spacer(Modifier.height(12.dp)); Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = if (message.startsWith("✅")) DarkPalette.SuccessContainer else DarkPalette.ErrorContainer)) { Text(message, modifier = Modifier.padding(16.dp), fontWeight = FontWeight.Bold) } }
                     if (generatedCodes.isNotEmpty()) { Spacer(Modifier.height(12.dp)); Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = DarkPalette.PrimaryContainer)) { Column(modifier = Modifier.padding(16.dp)) { Text("🔑 CÓDIGOS:", fontWeight = FontWeight.Bold); Spacer(Modifier.height(8.dp)); Text(generatedCodes, style = MaterialTheme.typography.bodyMedium) } } }
                 }
@@ -104,36 +89,40 @@ fun AdminDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManager:
             
             "view_schools" -> {
                 Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("Escuelas (${schools.size})", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
+                    Row { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("Escuelas (${schools.size})", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
                     Spacer(Modifier.height(8.dp))
-                    Button(onClick = { schools = dataRepository.getAllSchools() }, modifier = Modifier.fillMaxWidth()) { Text("🔄 Actualizar lista") }
+                    Button(onClick = { schools = dataRepository.getAllSchools() }, modifier = Modifier.fillMaxWidth()) { Text("🔄 Actualizar") }
                     Spacer(Modifier.height(8.dp))
-                    if (schools.isEmpty()) { Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No hay escuelas registradas.", style = MaterialTheme.typography.bodyLarge, color = DarkPalette.TextMuted) } }
+                    if (schools.isEmpty()) { Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No hay escuelas.", color = DarkPalette.TextMuted) } }
                     else { LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) { items(schools) { s -> Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else LightPalette.Surface)) { Column(modifier = Modifier.padding(16.dp)) { Text("🏫 ${s.name}", fontWeight = FontWeight.Bold); Text("📝 Escuela: ${s.code}"); Text("👔 Director: ${s.adminCode}"); Text("👨‍🏫 Docentes: ${s.teacherCount}") } } } } }
                 }
             }
             
             "view_codes" -> {
                 Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("Códigos (${allUsers.size})", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
+                    Row { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("Códigos (${allUsers.size})", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
                     Spacer(Modifier.height(8.dp))
                     Button(onClick = { allUsers = dataRepository.getAllUsers() }, modifier = Modifier.fillMaxWidth()) { Text("🔄 Actualizar") }
                     Spacer(Modifier.height(8.dp))
-                    if (allUsers.isEmpty()) { Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No hay códigos.", style = MaterialTheme.typography.bodyLarge, color = DarkPalette.TextMuted) } }
-                    else { LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) { items(allUsers) { u -> Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else LightPalette.Surface)) { Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) { Column(modifier = Modifier.weight(1f)) { Text("🔑 ${u.code}", fontWeight = FontWeight.Bold); Text("👤 ${u.name} (${u.role})") }; Icon(if (u.active) Icons.Default.CheckCircle else Icons.Default.Cancel, null, tint = if (u.active) DarkPalette.Success else DarkPalette.Error) } } } } }
+                    if (allUsers.isEmpty()) { Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No hay códigos.", color = DarkPalette.TextMuted) } }
+                    else { LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) { items(allUsers) { u -> Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else LightPalette.Surface)) { Row(modifier = Modifier.padding(16.dp)) { Column(modifier = Modifier.weight(1f)) { Text("🔑 ${u.code}", fontWeight = FontWeight.Bold); Text("👤 ${u.name} (${u.role})") }; Icon(if (u.active) Icons.Default.CheckCircle else Icons.Default.Cancel, null, tint = if (u.active) DarkPalette.Success else DarkPalette.Error) } } } } }
                 }
             }
             
             "games_manager" -> {
                 Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("Gestionar Juegos", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
-                    Spacer(Modifier.height(24.dp))
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(Icons.Default.Games, null, modifier = Modifier.size(64.dp), tint = DarkPalette.TextMuted)
-                            Spacer(Modifier.height(16.dp))
-                            Text("Gestión de juegos", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Text("Próximamente podrás subir juegos HTML", style = MaterialTheme.typography.bodyMedium, color = DarkPalette.TextMuted)
+                    Row { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("🎮 Gestionar Juegos", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
+                    Spacer(Modifier.height(16.dp))
+                    OutlinedTextField(value = newGameTitle, onValueChange = { newGameTitle = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Título del juego") }, shape = RoundedCornerShape(12.dp))
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(value = newGameUrl, onValueChange = { newGameUrl = it }, modifier = Modifier.fillMaxWidth(), label = { Text("URL o descripción") }, shape = RoundedCornerShape(12.dp))
+                    Spacer(Modifier.height(16.dp))
+                    Button(onClick = { if (newGameTitle.isNotBlank()) { games = games + "$newGameTitle | $newGameUrl"; newGameTitle = ""; newGameUrl = "" } }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = DarkPalette.Primary)) { Text("➕ Agregar Juego") }
+                    Spacer(Modifier.height(16.dp))
+                    Text("Juegos (${games.size}):", fontWeight = FontWeight.Bold)
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(games) { game ->
+                            Card(shape = RoundedCornerShape(12.dp)) { Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) { Text(game, modifier = Modifier.weight(1f)); IconButton(onClick = { games = games - game }) { Icon(Icons.Default.Delete, "Eliminar", tint = DarkPalette.Error) } } }
                         }
                     }
                 }
@@ -141,16 +130,9 @@ fun AdminDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManager:
             
             "moderate" -> {
                 Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("Moderar Contenido", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
+                    Row { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("Moderar Contenido", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
                     Spacer(Modifier.height(24.dp))
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(Icons.Default.Gavel, null, modifier = Modifier.size(64.dp), tint = DarkPalette.TextMuted)
-                            Spacer(Modifier.height(16.dp))
-                            Text("Moderación de contenido", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Text("Próximamente podrás moderar bitácoras y guías", style = MaterialTheme.typography.bodyMedium, color = DarkPalette.TextMuted)
-                        }
-                    }
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Column(horizontalAlignment = Alignment.CenterHorizontally) { Icon(Icons.Default.Gavel, null, modifier = Modifier.size(64.dp), tint = DarkPalette.TextMuted); Spacer(Modifier.height(16.dp)); Text("Moderación de contenido", style = MaterialTheme.typography.titleMedium); Text("Próximamente", color = DarkPalette.TextMuted) } }
                 }
             }
             
@@ -161,7 +143,7 @@ fun AdminDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManager:
                         item { CardService("Registrar\nEscuela", Icons.Default.AddBusiness, "Crear nueva", DarkPalette.Primary, DarkPalette.PrimaryVariant) { currentScreen = "register_school" } }
                         item { CardService("Ver\nEscuelas", Icons.Default.ListAlt, "${schools.size} registradas", DarkPalette.Secondary, DarkPalette.SecondaryVariant) { schools = dataRepository.getAllSchools(); currentScreen = "view_schools" } }
                         item { CardService("Códigos", Icons.Default.Key, "${allUsers.size} usuarios", DarkPalette.Tertiary, DarkPalette.TertiaryContainer) { allUsers = dataRepository.getAllUsers(); currentScreen = "view_codes" } }
-                        item { CardService("Gestionar\nJuegos", Icons.Default.Games, "Subir y moderar", DarkPalette.Info, DarkPalette.InfoContainer) { currentScreen = "games_manager" } }
+                        item { CardService("Gestionar\nJuegos", Icons.Default.Games, "Agregar/Eliminar", DarkPalette.Info, DarkPalette.InfoContainer) { currentScreen = "games_manager" } }
                         item { CardService("Moderar\nContenido", Icons.Default.Gavel, "Bitácoras, guías", DarkPalette.Warning, DarkPalette.WarningContainer) { currentScreen = "moderate" } }
                         item { CardService("Cerrar\nSesión", Icons.Default.Logout, "Salir", DarkPalette.Error, DarkPalette.ErrorContainer) { onNavigateBack() } }
                     }
