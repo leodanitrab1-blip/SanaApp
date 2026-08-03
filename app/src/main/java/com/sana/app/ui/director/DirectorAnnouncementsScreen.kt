@@ -1,3 +1,4 @@
+import androidx.compose.material3.ExperimentalMaterial3Api
 package com.sana.app.ui.director
 
 import androidx.compose.animation.*
@@ -17,6 +18,7 @@ import com.sana.app.core.theme.DarkPalette
 
 data class Announcement(val title: String, val content: String, val date: String, val priority: String = "NORMAL")
 
+@OptIn(ExperimentalMaterial3Api::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DirectorAnnouncementsScreen(

@@ -1,3 +1,4 @@
+import androidx.compose.material3.ExperimentalMaterial3Api
 package com.sana.app.ui.teacher
 
 import androidx.compose.animation.*
@@ -26,6 +27,7 @@ data class StudyPlan(
     val visibility: String = "PRIVADO"
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeacherPlansScreen(
     plans: List<StudyPlan>,
