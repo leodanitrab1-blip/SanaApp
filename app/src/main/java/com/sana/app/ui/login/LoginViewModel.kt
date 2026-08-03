@@ -21,35 +21,73 @@ class LoginViewModel @Inject constructor(
     init { try { dataRepository.initialize() } catch (_: Exception) { } }
 
     fun tryLogin(code: String, loginType: LoginType) {
-        if (code.isBlank()) { _uiState.value = LoginUiState(error = "Ingresa el código"); return }
+        if (code.isBlank()) { 
+            _uiState.value = LoginUiState(error = "Ingresa el código") 
+            return 
+        }
         
         val cleanCode = code.uppercase().trim()
-        val user = dataRepository.findUserByCode(cleanCode)
         
+        // 1. Buscar en usuarios registrados
+        val user = dataRepository.findUserByCode(cleanCode)
         if (user != null && user.active) {
-            // ACEPTAR cualquier rol para SCHOOL (docente, director, alumno)
             _uiState.value = LoginUiState(
                 isSuccess = true, 
                 userId = cleanCode.hashCode().toLong(), 
                 userRole = user.role, 
                 userName = user.name
             )
-        } else {
-            // Buscar también en escuelas (código ADM guardado como director)
-            val schools = dataRepository.getAllSchools()
-            val school = schools.find { it.adminCode == cleanCode }
-            if (school != null) {
-                // Es un director registrado desde admin
+            return
+        }
+        
+        // 2. Buscar en escuelas (códigos ADM y ESC)
+        val schools = dataRepository.getAllSchools()
+        for (school in schools) {
+            // ¿Es código de director?
+            if (school.adminCode == cleanCode) {
+                // Crear usuario director si no existe
+                if (dataRepository.findUserByCode(cleanCode) == null) {
+                    dataRepository.saveUser(UserRecord(
+                        code = cleanCode,
+                        role = Constants.ROLE_DIRECTOR,
+                        name = school.directorName,
+                        schoolCode = school.code
+                    ))
+                }
                 _uiState.value = LoginUiState(
                     isSuccess = true,
                     userId = cleanCode.hashCode().toLong(),
                     userRole = Constants.ROLE_DIRECTOR,
                     userName = school.directorName
                 )
-            } else {
-                _uiState.value = LoginUiState(error = "Código no registrado")
+                return
+            }
+            
+            // ¿Es código de escuela?
+            if (school.code == cleanCode) {
+                _uiState.value = LoginUiState(
+                    isSuccess = true,
+                    userId = cleanCode.hashCode().toLong(),
+                    userRole = Constants.ROLE_DIRECTOR,
+                    userName = school.directorName
+                )
+                return
+            }
+            
+            // ¿Es un código de docente de esta escuela?
+            if (school.teacherCodes.contains(cleanCode)) {
+                _uiState.value = LoginUiState(
+                    isSuccess = true,
+                    userId = cleanCode.hashCode().toLong(),
+                    userRole = Constants.ROLE_TEACHER,
+                    userName = "Docente"
+                )
+                return
             }
         }
+        
+        // 3. No encontrado
+        _uiState.value = LoginUiState(error = "Código no registrado en el sistema")
     }
     
     fun registerStudent(name: String): String {
