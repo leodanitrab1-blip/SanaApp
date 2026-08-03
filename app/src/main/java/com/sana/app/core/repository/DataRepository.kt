@@ -36,8 +36,7 @@ class DataRepository @Inject constructor(@ApplicationContext private val context
         val users = getAllUsers().toMutableList()
         users.removeAll { it.code == user.code }
         users.add(user)
-        val json = gson.toJson(users)
-        prefs.edit().putString("users", json).apply()
+        prefs.edit().putString("users", gson.toJson(users)).apply()
     }
     
     fun findUserByCode(code: String): UserRecord? {
@@ -54,20 +53,14 @@ class DataRepository @Inject constructor(@ApplicationContext private val context
     fun getAllSchools(): List<SchoolRecord> {
         val json = prefs.getString("schools", "[]") ?: "[]"
         val type = object : TypeToken<List<SchoolRecord>>() {}.type
-        val result = try { gson.fromJson(json, type) ?: emptyList() } catch (e: Exception) { emptyList() }
-        // Log para debug
-        println("🏫 DEBUG: Escuelas cargadas: ${result.size}")
-        result.forEach { println("   ${it.code} - ${it.name} | ADM: ${it.adminCode} | Docentes: ${it.teacherCodes}") }
-        return result
+        return try { gson.fromJson<List<SchoolRecord>>(json, type) ?: emptyList() } catch (e: Exception) { emptyList() }
     }
     
     fun saveSchool(school: SchoolRecord) {
         val schools = getAllSchools().toMutableList()
         schools.removeAll { it.code == school.code }
         schools.add(school)
-        val json = gson.toJson(schools)
-        prefs.edit().putString("schools", json).apply()
-        println("💾 DEBUG: Escuela guardada: ${school.code} | ADM: ${school.adminCode}")
+        prefs.edit().putString("schools", gson.toJson(schools)).apply()
     }
     
     fun generateCode(prefix: String): String {
