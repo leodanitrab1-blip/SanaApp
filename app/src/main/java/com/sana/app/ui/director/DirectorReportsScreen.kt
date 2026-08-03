@@ -36,16 +36,28 @@ fun DirectorReportsScreen(
         }
         Spacer(Modifier.height(16.dp))
         
-        // TARJETAS DE ESTADÍSTICAS
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items(reports.size) { index ->
                 val r = reports[index]
-                Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else LightPalette.Surface), elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else DarkPalette.Surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
                     Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Surface(modifier = Modifier.size(56.dp), shape = RoundedCornerShape(16.dp), color = r.color.copy(alpha = 0.2f)) { Box(contentAlignment = Alignment.Center) { Icon(r.icon, null, tint = r.color, modifier = Modifier.size(28.dp)) } }
+                        Surface(modifier = Modifier.size(56.dp), shape = RoundedCornerShape(16.dp), color = r.color.copy(alpha = 0.2f)) {
+                            Box(contentAlignment = Alignment.Center) { Icon(r.icon, null, tint = r.color, modifier = Modifier.size(28.dp)) }
+                        }
                         Spacer(Modifier.width(16.dp))
-                        Column(modifier = Modifier.weight(1f)) { Text(r.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold); Text(r.value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = r.color) }
-                        if (r.trend.isNotEmpty()) { Surface(shape = RoundedCornerShape(8.dp), color = DarkPalette.Success.copy(alpha = 0.2f)) { Text(r.trend, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), style = MaterialTheme.typography.labelSmall, color = DarkPalette.Success) } }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(r.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                            Text(r.value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = r.color)
+                        }
+                        if (r.trend.isNotEmpty()) {
+                            Surface(shape = RoundedCornerShape(8.dp), color = DarkPalette.Success.copy(alpha = 0.2f)) {
+                                Text(r.trend, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), style = MaterialTheme.typography.labelSmall, color = DarkPalette.Success)
+                            }
+                        }
                     }
                 }
             }

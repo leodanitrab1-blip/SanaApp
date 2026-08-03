@@ -1,10 +1,8 @@
 package com.sana.app.ui.director
 
 import androidx.compose.animation.*
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -16,11 +14,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.sana.app.core.theme.DarkPalette
-import java.text.SimpleDateFormat
-import java.util.*
 
 data class Announcement(val title: String, val content: String, val date: String, val priority: String = "NORMAL")
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DirectorAnnouncementsScreen(
     announcements: List<Announcement>,
@@ -35,12 +32,10 @@ fun DirectorAnnouncementsScreen(
     var newPriority by remember { mutableStateOf("NORMAL") }
 
     Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-        // CABECERA
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Volver") }
             Text("📢 Avisos y Comunicados", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Spacer(Modifier.weight(1f))
-            // Badge de cantidad
             Surface(shape = RoundedCornerShape(12.dp), color = DarkPalette.Primary) {
                 Text("${announcements.size} avisos", modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp), color = androidx.compose.ui.graphics.Color.White, style = MaterialTheme.typography.labelMedium)
             }
@@ -48,7 +43,6 @@ fun DirectorAnnouncementsScreen(
         
         Spacer(Modifier.height(16.dp))
         
-        // BOTÓN NUEVO AVISO
         Button(
             onClick = { showForm = !showForm },
             modifier = Modifier.fillMaxWidth(),
@@ -60,31 +54,26 @@ fun DirectorAnnouncementsScreen(
             Text(if (showForm) "Cancelar" else "Nuevo Aviso", fontWeight = FontWeight.Bold)
         }
         
-        // FORMULARIO
         AnimatedVisibility(visible = showForm, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
             Card(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else LightPalette.Surface),
+                colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else DarkPalette.Surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text("Nuevo comunicado", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(12.dp))
-                    
                     OutlinedTextField(value = newTitle, onValueChange = { newTitle = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Título") }, shape = RoundedCornerShape(12.dp))
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(value = newContent, onValueChange = { newContent = it }, modifier = Modifier.fillMaxWidth().height(120.dp), label = { Text("Contenido del aviso") }, shape = RoundedCornerShape(12.dp))
                     Spacer(Modifier.height(8.dp))
-                    
-                    // Prioridad
                     Text("Prioridad:", style = MaterialTheme.typography.labelMedium)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf("ALTA" to DarkPalette.Error, "NORMAL" to DarkPalette.Warning, "BAJA" to DarkPalette.Success).forEach { (label, color) ->
                             FilterChip(selected = newPriority == label, onClick = { newPriority = label }, label = { Text(label) }, colors = FilterChipDefaults.filterChipColors(selectedContainerColor = color))
                         }
                     }
-                    
                     Spacer(Modifier.height(16.dp))
                     Button(onClick = {
                         if (newTitle.isNotBlank() && newContent.isNotBlank()) {
@@ -98,7 +87,6 @@ fun DirectorAnnouncementsScreen(
         
         Spacer(Modifier.height(8.dp))
         
-        // LISTA DE AVISOS
         if (announcements.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -114,17 +102,12 @@ fun DirectorAnnouncementsScreen(
                     val a = announcements[index]
                     Card(
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else LightPalette.Surface),
+                        colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else DarkPalette.Surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                // Indicador de prioridad
-                                Surface(
-                                    modifier = Modifier.size(8.dp),
-                                    shape = RoundedCornerShape(4.dp),
-                                    color = when (a.priority) { "ALTA" -> DarkPalette.Error; "BAJA" -> DarkPalette.Success; else -> DarkPalette.Warning }
-                                ) {}
+                                Surface(modifier = Modifier.size(8.dp), shape = RoundedCornerShape(4.dp), color = when (a.priority) { "ALTA" -> DarkPalette.Error; "BAJA" -> DarkPalette.Success; else -> DarkPalette.Warning }) {}
                                 Spacer(Modifier.width(8.dp))
                                 Text(a.title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                                 Text(a.date, style = MaterialTheme.typography.labelSmall, color = DarkPalette.TextMuted)

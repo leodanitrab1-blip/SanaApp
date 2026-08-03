@@ -2,12 +2,17 @@ package com.sana.app.ui.director
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import com.sana.app.core.repository.DataRepository
-import com.sana.app.core.repository.UserRecord
 import com.sana.app.core.theme.DarkPalette
 import com.sana.app.core.theme.LightPalette
 import com.sana.app.core.theme.ThemeManager
@@ -65,19 +70,28 @@ fun DirectorDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManag
             )
             
             "logbook" -> {
-                // Pantalla simple de bitácora
                 Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-                    Row { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("📋 Bitácora", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }
+                        Text("📋 Bitácora", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    }
                     Spacer(Modifier.height(24.dp))
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Bitácora - Próximamente", style = MaterialTheme.typography.bodyLarge, color = DarkPalette.TextMuted) }
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { 
+                        Text("Bitácora - Próximamente", style = MaterialTheme.typography.bodyLarge, color = DarkPalette.TextMuted) 
+                    }
                 }
             }
             
             "school_data" -> {
                 Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-                    Row { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("🏫 Mi Escuela", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }
+                        Text("🏫 Mi Escuela", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    }
                     Spacer(Modifier.height(24.dp))
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Datos de la escuela - Próximamente", style = MaterialTheme.typography.bodyLarge, color = DarkPalette.TextMuted) }
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { 
+                        Text("Datos de la escuela - Próximamente", style = MaterialTheme.typography.bodyLarge, color = DarkPalette.TextMuted) 
+                    }
                 }
             }
             
