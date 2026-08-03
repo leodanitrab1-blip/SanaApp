@@ -2,11 +2,15 @@ package com.sana.app.ui.teacher
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sana.app.core.repository.DataRepository
 import com.sana.app.core.theme.DarkPalette
@@ -28,8 +32,6 @@ fun TeacherDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManage
 
     var currentScreen by remember { mutableStateOf("main") }
     var teacherName by remember { mutableStateOf("Docente") }
-    
-    // Datos
     var logbookEntries by remember { mutableStateOf(listOf<LogbookEntry>()) }
     var studyPlans by remember { mutableStateOf(listOf<StudyPlan>()) }
     var guides by remember { mutableStateOf(listOf<String>()) }
@@ -64,7 +66,10 @@ fun TeacherDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManage
             "guides" -> {
                 var newGuide by remember { mutableStateOf("") }
                 Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-                    Row { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("📤 Guías", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }
+                        Text("📤 Guías", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    }
                     Spacer(Modifier.height(16.dp))
                     OutlinedTextField(value = newGuide, onValueChange = { newGuide = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Nueva guía") }, shape = RoundedCornerShape(12.dp))
                     Spacer(Modifier.height(8.dp))
@@ -82,7 +87,10 @@ fun TeacherDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManage
             
             "messages" -> {
                 Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-                    Row { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("📬 Buzón", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }
+                        Text("📬 Buzón", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    }
                     Spacer(Modifier.height(24.dp))
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -97,9 +105,14 @@ fun TeacherDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManage
             
             "share" -> {
                 Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-                    Row { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("🔗 Compartir", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") }
+                        Text("🔗 Compartir", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    }
                     Spacer(Modifier.height(24.dp))
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Compartir con otros docentes - Próximamente", style = MaterialTheme.typography.bodyLarge, color = DarkPalette.TextMuted) }
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { 
+                        Text("Compartir con otros docentes - Próximamente", style = MaterialTheme.typography.bodyLarge, color = DarkPalette.TextMuted) 
+                    }
                 }
             }
             

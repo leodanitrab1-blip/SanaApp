@@ -73,7 +73,7 @@ fun TeacherMainScreen(
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(
                 containerColor = if (isDark) DarkPalette.Primary.copy(alpha = 0.15f) 
-                                else LightPalette.Primary.copy(alpha = 0.1f)
+                                else DarkPalette.Primary.copy(alpha = 0.1f)
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
