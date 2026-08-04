@@ -1,7 +1,7 @@
 import com.sana.app.core.ai.SanaAI
 @file:OptIn(ExperimentalMaterial3Api::class)
+import com.sana.app.core.ai.SanaAI
 
-package com.sana.app.ui.student
 
 import android.media.MediaPlayer
 import androidx.compose.animation.*
