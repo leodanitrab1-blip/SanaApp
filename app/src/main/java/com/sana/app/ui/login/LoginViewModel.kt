@@ -13,11 +13,17 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val repo = FirebaseRepository(application)
-    
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    init { viewModelScope.launch { repo.initialize(); repo.syncAll() } }
+    init {
+        viewModelScope.launch {
+            repo.initialize()
+            // 🔥 SINCRONIZAR DATOS DE FIREBASE AL ABRIR LA APP
+            val synced = repo.syncAll()
+            android.util.Log.d("SANA", "Sincronizados $synced registros de Firebase")
+        }
+    }
 
     fun tryLogin(code: String, loginType: LoginType) {
         if (code.isBlank()) { _uiState.value = LoginUiState(error = "Ingresa el código"); return }

@@ -48,6 +48,7 @@ fun AdminDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManager:
     var showCodes by remember { mutableStateOf(false) }
     var schools by remember { mutableStateOf(repo.getAllSchools()) }
     var users by remember { mutableStateOf(repo.getAllUsers()) }
+    var isSyncing by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (isDark) { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(DarkPalette.BackgroundGradientStart, DarkPalette.BackgroundGradientEnd)))); StarryBackground(starColor = DarkPalette.StarDim, starCount = 80) }
@@ -73,11 +74,11 @@ fun AdminDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManager:
                             repo.saveUser(UserRecord(code = ac, role = Constants.ROLE_DIRECTOR, name = directorName, schoolCode = sc))
                             repo.saveSchool(SchoolRecord(code = sc, name = schoolName, adminCode = ac, directorName = directorName, teacherCount = count, teacherCodes = tcs))
                             generatedCodes = "🏫 ESCUELA: $sc\n👔 DIRECTOR: $ac\n👨‍🏫 DOCENTES: ${tcs.joinToString(", ")}"
-                            message = "✅ Escuela registrada en Firebase ☁️"
+                            message = "✅ Escuela guardada en Firebase ☁️"
                             schools = repo.getAllSchools(); users = repo.getAllUsers()
                             schoolName = ""; directorName = ""; teacherCount = ""
                         } else { message = "⚠️ Completa los campos" }
-                    }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = DarkPalette.Primary)) { Text("Registrar y Subir ☁️") }
+                    }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = DarkPalette.Primary)) { Text("Registrar y Guardar ☁️") }
                     if (message.isNotEmpty()) { Spacer(Modifier.height(8.dp)); Text(message, color = if (message.startsWith("✅")) DarkPalette.Success else DarkPalette.Error) }
                     if (generatedCodes.isNotEmpty()) { Spacer(Modifier.height(8.dp)); Card(shape = RoundedCornerShape(12.dp)) { Text(generatedCodes, modifier = Modifier.padding(16.dp)) } }
                 }
@@ -99,12 +100,31 @@ fun AdminDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManager:
             else -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     TopAppBar(title = { Text("⚙️ Administración", fontWeight = FontWeight.Bold) }, navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, "Volver") } }, actions = { IconButton(onClick = { scope.launch { themeManager.toggleTheme() } }) { Icon(if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode, "Tema") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = if (isDark) DarkPalette.Surface.copy(alpha = 0.8f) else LightPalette.Surface.copy(alpha = 0.9f)))
+                    
+                    // BOTÓN DE SINCRONIZAR
+                    Button(onClick = {
+                        scope.launch {
+                            isSyncing = true
+                            val count = repo.syncAll()
+                            schools = repo.getAllSchools()
+                            users = repo.getAllUsers()
+                            message = "✅ Sincronizados $count registros de la nube"
+                            isSyncing = false
+                        }
+                    }, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), colors = ButtonDefaults.buttonColors(containerColor = DarkPalette.Info)) {
+                        if (isSyncing) CircularProgressIndicator(modifier = Modifier.size(20.dp), color = androidx.compose.ui.graphics.Color.White)
+                        else Icon(Icons.Default.CloudSync, null, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(if (isSyncing) "Sincronizando..." else "Sincronizar desde la nube ☁️")
+                    }
+                    if (message.isNotEmpty() && !showRegister) { Text(message, modifier = Modifier.padding(horizontal = 16.dp), color = if (message.startsWith("✅")) DarkPalette.Success else DarkPalette.TextMuted) }
+                    
                     LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         item { MenuCard("Registrar\nEscuela", Icons.Default.AddBusiness, "Crear nueva", DarkPalette.Primary, DarkPalette.PrimaryVariant) { showRegister = true } }
                         item { MenuCard("Ver\nEscuelas", Icons.Default.ListAlt, "${schools.size} reg.", DarkPalette.Secondary, DarkPalette.SecondaryVariant) { schools = repo.getAllSchools(); showSchools = true } }
                         item { MenuCard("Códigos", Icons.Default.Key, "${users.size} usuarios", DarkPalette.Tertiary, DarkPalette.TertiaryContainer) { users = repo.getAllUsers(); showCodes = true } }
-                        item { MenuCard("Juegos", Icons.Default.Games, "Gestionar", DarkPalette.Info, DarkPalette.InfoContainer) { message = "📦 Próximamente" } }
-                        item { MenuCard("Moderar", Icons.Default.Gavel, "Contenido", DarkPalette.Warning, DarkPalette.WarningContainer) { message = "📦 Próximamente" } }
+                        item { MenuCard("Juegos", Icons.Default.Games, "Gestionar", DarkPalette.Info, DarkPalette.InfoContainer) { } }
+                        item { MenuCard("Moderar", Icons.Default.Gavel, "Contenido", DarkPalette.Warning, DarkPalette.WarningContainer) { } }
                         item { MenuCard("Salir", Icons.Default.Logout, "Cerrar sesión", DarkPalette.Error, DarkPalette.ErrorContainer) { onNavigateBack() } }
                     }
                 }
