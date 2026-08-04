@@ -1,3 +1,4 @@
+import com.sana.app.core.ai.SanaAI
 @file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.sana.app.ui.student
