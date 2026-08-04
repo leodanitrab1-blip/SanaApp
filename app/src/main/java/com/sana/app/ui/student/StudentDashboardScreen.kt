@@ -45,7 +45,6 @@ import java.util.*
 data class DiaryEntry(val id: Int, val mood: String, val title: String, val content: String, val date: String)
 data class BreathExercise(val id: Int, val name: String, val desc: String, val inhale: Int, val hold: Int, val exhale: Int, val rounds: Int)
 data class EmerContact(val id: Int, val name: String, val phone: String, val desc: String, val country: String)
-data class GameItem(val title: String, val icon: ImageVector, val desc: String)
 
 @Composable
 fun StudentDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManager: ThemeManager) {
@@ -56,43 +55,25 @@ fun StudentDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManage
     var message by remember { mutableStateOf("") }
     var studentName by remember { mutableStateOf("Alumno") }
     var diaryEntries by remember { mutableStateOf(listOf<DiaryEntry>()) }
+    var games by remember { mutableStateOf(listOf<String>()) }
+    var plans by remember { mutableStateOf(listOf<String>()) }
+    var guides by remember { mutableStateOf(listOf<String>()) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (isDark) { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(DarkPalette.BackgroundGradientStart, DarkPalette.BackgroundGradientEnd)))); StarryBackground(starColor = DarkPalette.StarDim, starCount = 100) }
         else { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(LightPalette.BackgroundGradientStart, LightPalette.BackgroundGradientEnd)))) }
 
         when (screen) {
-            // ============ RESPIRACIÓN ============
             "breathing" -> BreathingScreen(isDark) { screen = "main" }
-            
-            // ============ DIARIO EMOCIONAL ============
-            "diary" -> DiaryScreen(diaryEntries, isDark,
-                onSave = { mood, title, content ->
-                    diaryEntries = listOf(DiaryEntry(diaryEntries.size, mood, title, content, SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date()))) + diaryEntries
-                },
-                onDelete = { id -> diaryEntries = diaryEntries.filter { it.id != id } }
-            ) { screen = "main" }
-            
-            // ============ LÍNEAS DE EMERGENCIA ============
+            "diary" -> DiaryScreen(diaryEntries, isDark, { m, t, c -> diaryEntries = listOf(DiaryEntry(diaryEntries.size, m, t, c, SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date()))) + diaryEntries }, { id -> diaryEntries = diaryEntries.filter { it.id != id } }) { screen = "main" }
             "emergency" -> EmergencyScreen(isDark) { screen = "main" }
-            
-            // ============ JUEGOS ============
-            "games" -> GamesScreen(isDark) { screen = "main" }
-            
-            // ============ BIBLIOTECA ============
-            "library" -> LibraryScreen(isDark) { screen = "main" }
-            
-            // ============ PANTALLA PRINCIPAL ============
-            else -> MainScreen(studentName, diaryEntries.size, isDark,
-                onNavigate = { screen = it },
-                onLogout = onNavigateBack,
-                onToggleTheme = { scope.launch { themeManager.toggleTheme() } }
-            )
+            "games" -> GamesScreen(games, isDark) { screen = "main" }
+            "library" -> LibraryScreen(guides, isDark) { screen = "main" }
+            "plans" -> PlansScreen(plans, isDark) { screen = "main" }
+            else -> MainScreen(studentName, diaryEntries.size, isDark, { screen = it }, onNavigateBack, { scope.launch { themeManager.toggleTheme() } })
         }
     }
 }
-
-// ============ PANTALLA PRINCIPAL ============
 
 @Composable
 private fun MainScreen(name: String, diaryCount: Int, isDark: Boolean, onNavigate: (String) -> Unit, onLogout: () -> Unit, onToggleTheme: () -> Unit) {
@@ -117,19 +98,17 @@ private fun MainScreen(name: String, diaryCount: Int, isDark: Boolean, onNavigat
         }
         
         LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp).padding(bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            item { MenuCard("🤖 Chat IA", Icons.Default.Psychology, "Asistente emocional", DarkPalette.Primary, DarkPalette.PrimaryVariant) { /* Se hará aparte */ } }
-            item { MenuCard("🫁 Respiración", Icons.Default.Air, "7 ejercicios guiados", DarkPalette.Secondary, DarkPalette.SecondaryVariant) { onNavigate("breathing") } }
+            item { MenuCard("🤖 Chat IA", Icons.Default.Psychology, "Próximamente", DarkPalette.Primary, DarkPalette.PrimaryVariant) { } }
+            item { MenuCard("🫁 Respiración", Icons.Default.Air, "7 ejercicios", DarkPalette.Secondary, DarkPalette.SecondaryVariant) { onNavigate("breathing") } }
             item { MenuCard("📝 Diario", Icons.Default.Book, "$diaryCount entradas", DarkPalette.Tertiary, DarkPalette.TertiaryContainer) { onNavigate("diary") } }
-            item { MenuCard("🆘 Ayuda", Icons.Default.Sos, "Líneas de emergencia", DarkPalette.Error, DarkPalette.ErrorContainer) { onNavigate("emergency") } }
-            item { MenuCard("🎮 Juegos", Icons.Default.Games, "Aprende jugando", DarkPalette.MoodHappy, DarkPalette.Warning) { onNavigate("games") } }
-            item { MenuCard("📖 Biblioteca", Icons.Default.LibraryBooks, "Guías y material", DarkPalette.Info, DarkPalette.InfoContainer) { onNavigate("library") } }
-            item { MenuCard("📚 Planes", Icons.Default.Assignment, "De tus docentes", DarkPalette.MoodCalm, DarkPalette.Success) { } }
+            item { MenuCard("🆘 Ayuda", Icons.Default.Sos, "Líneas emergencia", DarkPalette.Error, DarkPalette.ErrorContainer) { onNavigate("emergency") } }
+            item { MenuCard("🎮 Juegos", Icons.Default.Games, "Tus juegos", DarkPalette.MoodHappy, DarkPalette.Warning) { onNavigate("games") } }
+            item { MenuCard("📖 Biblioteca", Icons.Default.LibraryBooks, "Guías docentes", DarkPalette.Info, DarkPalette.InfoContainer) { onNavigate("library") } }
+            item { MenuCard("📚 Planes", Icons.Default.Assignment, "De docentes", DarkPalette.MoodCalm, DarkPalette.Success) { onNavigate("plans") } }
             item { MenuCard("🚪 Salir", Icons.Default.Logout, "Cerrar sesión", DarkPalette.Warning, DarkPalette.Error) { onLogout() } }
         }
     }
 }
-
-// ============ RESPIRACIÓN ============
 
 @Composable
 private fun BreathingScreen(isDark: Boolean, onBack: () -> Unit) {
@@ -145,10 +124,7 @@ private fun BreathingScreen(isDark: Boolean, onBack: () -> Unit) {
         Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
             Row { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("🫁 Respiración Guiada", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
             Spacer(Modifier.height(16.dp))
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                val s = exercises.size
-                for (i in 0 until s) { val ex = exercises[i]; item(key = "ex_$i") { Card(onClick = { selected = ex }, shape = RoundedCornerShape(16.dp)) { Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) { Surface(modifier = Modifier.size(44.dp), shape = CircleShape, color = DarkPalette.Primary.copy(alpha = 0.2f)) { Box(contentAlignment = Alignment.Center) { Text("${ex.id}", fontWeight = FontWeight.Bold, color = DarkPalette.Primary) } }; Spacer(Modifier.width(12.dp)); Column(modifier = Modifier.weight(1f)) { Text(ex.name, fontWeight = FontWeight.Bold); Text(ex.desc, style = MaterialTheme.typography.bodySmall); Text("${ex.rounds} rondas", style = MaterialTheme.typography.labelSmall, color = DarkPalette.Primary) }; Icon(Icons.Default.PlayArrow, "Iniciar", tint = DarkPalette.Primary) } } } }
-            }
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) { val s = exercises.size; for (i in 0 until s) { val ex = exercises[i]; item(key = "ex_$i") { Card(onClick = { selected = ex }, shape = RoundedCornerShape(16.dp)) { Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) { Surface(modifier = Modifier.size(44.dp), shape = CircleShape, color = DarkPalette.Primary.copy(alpha = 0.2f)) { Box(contentAlignment = Alignment.Center) { Text("${ex.id}", fontWeight = FontWeight.Bold, color = DarkPalette.Primary) } }; Spacer(Modifier.width(12.dp)); Column(modifier = Modifier.weight(1f)) { Text(ex.name, fontWeight = FontWeight.Bold); Text(ex.desc, style = MaterialTheme.typography.bodySmall); Text("${ex.rounds} rondas", style = MaterialTheme.typography.labelSmall, color = DarkPalette.Primary) }; Icon(Icons.Default.PlayArrow, "Iniciar", tint = DarkPalette.Primary) } } } } }
         }
     } else {
         val ex = selected!!
@@ -170,44 +146,48 @@ private fun BreathingScreen(isDark: Boolean, onBack: () -> Unit) {
     }
 }
 
-// ============ DIARIO ============
-
 @Composable
 private fun DiaryScreen(entries: List<DiaryEntry>, isDark: Boolean, onSave: (String, String, String) -> Unit, onDelete: (Int) -> Unit, onBack: () -> Unit) {
-    var mood by remember { mutableStateOf("") }
-    var title by remember { mutableStateOf("") }
-    var content by remember { mutableStateOf("") }
+    var mood by remember { mutableStateOf("") }; var title by remember { mutableStateOf("") }; var content by remember { mutableStateOf("") }
     val moods = listOf("😊 Feliz" to "HAPPY", "😌 Tranquilo" to "CALM", "😐 Neutral" to "NEUTRAL", "😢 Triste" to "SAD", "😰 Ansioso" to "ANXIOUS", "😠 Enojado" to "ANGRY")
-    
     Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
         Row { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("📝 Diario (${entries.size})", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
         Spacer(Modifier.height(12.dp))
         Text("¿Cómo te sientes?", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) { moods.forEach { (l, c) -> Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { mood = c }) { Surface(modifier = Modifier.size(44.dp), shape = CircleShape, color = if (mood == c) DarkPalette.Primary else DarkPalette.SurfaceVariant) { Box(contentAlignment = Alignment.Center) { Text(l.split(" ").first(), style = MaterialTheme.typography.headlineSmall) } } } } }
         Spacer(Modifier.height(12.dp))
         OutlinedTextField(value = title, onValueChange = { title = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Título") }, shape = RoundedCornerShape(12.dp))
-        Spacer(Modifier.height(8.dp))
         OutlinedTextField(value = content, onValueChange = { content = it }, modifier = Modifier.fillMaxWidth().height(120.dp), label = { Text("Escribe lo que sientes...") }, shape = RoundedCornerShape(12.dp))
-        Spacer(Modifier.height(12.dp))
         Button(onClick = { if (mood.isNotEmpty() && content.isNotBlank()) { onSave(mood, title.ifBlank { "Sin título" }, content); mood = ""; title = ""; content = "" } }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = DarkPalette.Tertiary)) { Text("💾 Guardar") }
         Spacer(Modifier.height(16.dp))
-        if (entries.isEmpty()) { Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Diario vacío", color = DarkPalette.TextMuted) } }
+        if (entries.isEmpty()) { Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Diario vacío. Escribe tu primera entrada.", color = DarkPalette.TextMuted) } }
         else { LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) { val s = entries.size; for (i in 0 until s) { val e = entries[i]; item(key = "d_$i") { Card(shape = RoundedCornerShape(20.dp), elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)) { Column(modifier = Modifier.padding(16.dp)) { Row { Text(moods.find { it.second == e.mood }?.first?.split(" ")?.first() ?: "😐", style = MaterialTheme.typography.headlineMedium); Spacer(Modifier.width(8.dp)); Column { Text(e.title, fontWeight = FontWeight.Bold); Text(e.date, style = MaterialTheme.typography.labelSmall, color = DarkPalette.TextMuted) } }; Spacer(Modifier.height(8.dp)); Text(e.content) } } } } } }
     }
 }
 
-// ============ EMERGENCIA ============
-
 @Composable
 private fun EmergencyScreen(isDark: Boolean, onBack: () -> Unit) {
-    val contacts = listOf(EmerContact(1, "Línea de la Vida", "800-911-2000", "Crisis 24/7", "México"), EmerContact(2, "SAPTEL", "55-5259-8121", "Apoyo psicológico", "México"), EmerContact(3, "Línea 135", "135", "Suicida", "Argentina"), EmerContact(4, "Línea 106", "106", "Salud mental", "Colombia"), EmerContact(5, "Teléfono Esperanza", "717-003-717", "Apoyo", "España"), EmerContact(6, "Línea 024", "024", "Suicida", "España"), EmerContact(7, "Salud Responde", "600-360-7777", "Orientación", "Chile"), EmerContact(8, "Línea 113", "113", "Salud mental", "Perú"), EmerContact(9, "Crisis Text", "741741", "Envía HOME", "Internacional"))
+    val contacts = listOf(
+        EmerContact(1, "Línea de la Vida", "800-911-2000", "Atención en crisis 24/7 - Gobierno de México", "México"),
+        EmerContact(2, "SAPTEL", "55-5259-8121", "Apoyo psicológico gratuito 24/7", "México"),
+        EmerContact(3, "Línea Diversa", "55-5658-1111", "Apoyo comunidad LGBTQ+", "México"),
+        EmerContact(4, "Línea Nacional contra la Violencia", "800-422-2525", "Violencia de género", "México"),
+        EmerContact(5, "LOCATEL", "55-5658-1111", "Atención ciudadana CDMX", "México"),
+        EmerContact(6, "Instituto Nacional de Psiquiatría", "55-4160-5000", "Salud mental", "México"),
+        EmerContact(7, "Línea 135", "135", "Atención al suicida", "Argentina"),
+        EmerContact(8, "Línea 106", "106", "Salud mental", "Colombia"),
+        EmerContact(9, "Teléfono Esperanza", "717-003-717", "Apoyo emocional", "España"),
+        EmerContact(10, "Línea 024", "024", "Conducta suicida", "España"),
+        EmerContact(11, "Salud Responde", "600-360-7777", "Orientación en salud", "Chile"),
+        EmerContact(12, "Línea 113", "113", "Salud mental", "Perú"),
+        EmerContact(13, "Crisis Text Line", "741741", "Envía HOME al 741741", "Internacional")
+    )
     val ctx = LocalContext.current
     
     Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-        Row { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("🆘 Ayuda", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
+        Row { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("🆘 Líneas de Ayuda", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
         Spacer(Modifier.height(12.dp))
-        Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = DarkPalette.Error.copy(alpha = 0.1f))) { Row(modifier = Modifier.padding(16.dp)) { Icon(Icons.Default.Favorite, null, tint = DarkPalette.Error, modifier = Modifier.size(32.dp)); Spacer(Modifier.width(12.dp)); Text("Líneas gratuitas y confidenciales", style = MaterialTheme.typography.bodyMedium) } }
+        Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = DarkPalette.Error.copy(alpha = 0.1f))) { Row(modifier = Modifier.padding(16.dp)) { Icon(Icons.Default.Favorite, null, tint = DarkPalette.Error, modifier = Modifier.size(32.dp)); Spacer(Modifier.width(12.dp)); Text("No estás solo/a. Líneas gratuitas 24/7.", style = MaterialTheme.typography.bodyMedium) } }
         Spacer(Modifier.height(16.dp))
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             contacts.groupBy { it.country }.forEach { (country, list) ->
@@ -218,29 +198,66 @@ private fun EmergencyScreen(isDark: Boolean, onBack: () -> Unit) {
     }
 }
 
-// ============ JUEGOS ============
-
 @Composable
-private fun GamesScreen(isDark: Boolean, onBack: () -> Unit) {
-    val games = listOf(GameItem("Memoria", Icons.Default.GridView, "Encuentra las parejas"), GameItem("Snake", Icons.Default.TrendingUp, "La serpiente clásica"), GameItem("Quiz", Icons.Default.Quiz, "Preguntas y respuestas"))
+private fun GamesScreen(games: List<String>, isDark: Boolean, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
         Row { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("🎮 Juegos", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
-        Spacer(Modifier.height(16.dp))
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) { val s = games.size; for (i in 0 until s) { val g = games[i]; item(key = "g_$i") { Card(shape = RoundedCornerShape(16.dp)) { Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) { Icon(g.icon, null, tint = DarkPalette.Primary, modifier = Modifier.size(40.dp)); Spacer(Modifier.width(12.dp)); Column(modifier = Modifier.weight(1f)) { Text(g.title, fontWeight = FontWeight.Bold); Text(g.desc, style = MaterialTheme.typography.bodySmall) }; Icon(Icons.Default.PlayArrow, "Jugar", tint = DarkPalette.Success) } } } } }
+        Spacer(Modifier.height(24.dp))
+        if (games.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.Games, null, modifier = Modifier.size(64.dp), tint = DarkPalette.TextMuted)
+                    Spacer(Modifier.height(16.dp))
+                    Text("No hay juegos disponibles", style = MaterialTheme.typography.bodyLarge, color = DarkPalette.TextMuted)
+                    Text("El administrador subirá juegos pronto", style = MaterialTheme.typography.bodySmall, color = DarkPalette.TextMuted)
+                }
+            }
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) { val s = games.size; for (i in 0 until s) { val g = games[i]; item(key = "g_$i") { Card(shape = RoundedCornerShape(16.dp)) { Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.Games, null, tint = DarkPalette.Primary, modifier = Modifier.size(40.dp)); Spacer(Modifier.width(12.dp)); Text(g, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f)); Icon(Icons.Default.PlayArrow, "Jugar", tint = DarkPalette.Success) } } } } }
+        }
     }
 }
-
-// ============ BIBLIOTECA ============
 
 @Composable
-private fun LibraryScreen(isDark: Boolean, onBack: () -> Unit) {
-    val items = listOf("Matemáticas - Álgebra básica" to "DOC-A1B2C3", "Español - Comprensión lectora" to "DOC-X9Y8Z7", "Ciencias - El sistema solar" to "DOC-M4N5O6")
+private fun LibraryScreen(guides: List<String>, isDark: Boolean, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
         Row { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("📖 Biblioteca", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
-        Spacer(Modifier.height(16.dp))
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) { val s = items.size; for (i in 0 until s) { val (title, author) = items[i]; item(key = "lib_$i") { Card(shape = RoundedCornerShape(16.dp)) { Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.MenuBook, null, tint = DarkPalette.Primary, modifier = Modifier.size(40.dp)); Spacer(Modifier.width(12.dp)); Column(modifier = Modifier.weight(1f)) { Text(title, fontWeight = FontWeight.Bold); Text("Por: $author", style = MaterialTheme.typography.bodySmall) }; Icon(Icons.Default.Download, "Descargar", tint = DarkPalette.Info) } } } } }
+        Spacer(Modifier.height(24.dp))
+        if (guides.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.LibraryBooks, null, modifier = Modifier.size(64.dp), tint = DarkPalette.TextMuted)
+                    Spacer(Modifier.height(16.dp))
+                    Text("Biblioteca vacía", style = MaterialTheme.typography.bodyLarge, color = DarkPalette.TextMuted)
+                    Text("Los docentes publicarán guías pronto", style = MaterialTheme.typography.bodySmall, color = DarkPalette.TextMuted)
+                }
+            }
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) { val s = guides.size; for (i in 0 until s) { val g = guides[i]; item(key = "lib_$i") { Card(shape = RoundedCornerShape(16.dp)) { Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.MenuBook, null, tint = DarkPalette.Primary, modifier = Modifier.size(40.dp)); Spacer(Modifier.width(12.dp)); Text(g, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f)); Icon(Icons.Default.Download, "Descargar", tint = DarkPalette.Info) } } } } }
+        }
     }
 }
+
+@Composable
+private fun PlansScreen(plans: List<String>, isDark: Boolean, onBack: () -> Unit) {
+    Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+        Row { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Volver") }; Text("📚 Planes de Estudio", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
+        Spacer(Modifier.height(24.dp))
+        if (plans.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.Assignment, null, modifier = Modifier.size(64.dp), tint = DarkPalette.TextMuted)
+                    Spacer(Modifier.height(16.dp))
+                    Text("No hay planes disponibles", style = MaterialTheme.typography.bodyLarge, color = DarkPalette.TextMuted)
+                    Text("Tus docentes publicarán planes de estudio pronto", style = MaterialTheme.typography.bodySmall, color = DarkPalette.TextMuted)
+                }
+            }
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) { val s = plans.size; for (i in 0 until s) { val p = plans[i]; item(key = "plan_$i") { Card(shape = RoundedCornerShape(16.dp)) { Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.Assignment, null, tint = DarkPalette.Secondary, modifier = Modifier.size(40.dp)); Spacer(Modifier.width(12.dp)); Text(p, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f)) } } } } }
+        }
+    }
+}
+
 @Composable
 private fun MenuCard(title: String, icon: ImageVector, desc: String, c1: Color, c2: Color, onClick: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth().aspectRatio(1f).clickable(onClick = onClick), shape = RoundedCornerShape(20.dp), elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)) {
