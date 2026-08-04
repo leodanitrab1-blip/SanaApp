@@ -77,7 +77,7 @@ fun StudentDiaryScreen(isDark: Boolean, onBack: () -> Unit) {
                                 IconButton(onClick = { entries = entries.filter { it.id != entry.id } }, modifier = Modifier.size(32.dp)) { Icon(Icons.Default.Delete, "Eliminar", tint = DarkPalette.Error, modifier = Modifier.size(18.dp)) }
                             }
                             Spacer(Modifier.height(12.dp))
-                            Text(entry.content, style = MaterialTheme.typography.bodyMedium, color = if (isDark) DarkPalette.OnSurfaceVariant else LightPalette.OnSurfaceVariant)
+                            Text(entry.content, style = MaterialTheme.typography.bodyMedium, color = if (isDark) DarkPalette.OnSurfaceVariant else DarkPalette.OnSurfaceVariant)
                         }
                     }
                 }
