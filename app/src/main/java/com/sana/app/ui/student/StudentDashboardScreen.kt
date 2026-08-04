@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.sana.app.ui.student
 
 import android.media.MediaPlayer
@@ -45,8 +47,6 @@ data class BreathExercise(val id: Int, val name: String, val desc: String, val i
 data class EmerContact(val id: Int, val name: String, val phone: String, val desc: String, val country: String)
 data class GameItem(val title: String, val icon: ImageVector, val desc: String)
 
-@OptIn(ExperimentalMaterial3Api::class)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudentDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManager: ThemeManager) {
     val currentTheme by themeManager.currentTheme.collectAsState(initial = ThemeManager.THEME_DARK)
@@ -93,7 +93,7 @@ fun StudentDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManage
 }
 
 // ============ PANTALLA PRINCIPAL ============
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 private fun MainScreen(name: String, diaryCount: Int, isDark: Boolean, onNavigate: (String) -> Unit, onLogout: () -> Unit, onToggleTheme: () -> Unit) {
     val frases = listOf("🌟 Cada día es una nueva oportunidad", "💪 Eres más fuerte de lo que crees", "🌈 Después de la tormenta sale el sol", "🦋 Respira profundo, todo estará bien")
@@ -130,7 +130,7 @@ private fun MainScreen(name: String, diaryCount: Int, isDark: Boolean, onNavigat
 }
 
 // ============ RESPIRACIÓN ============
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 private fun BreathingScreen(isDark: Boolean, onBack: () -> Unit) {
     val exercises = listOf(BreathExercise(1, "4-7-8", "Inhala 4s, retén 7s, exhala 8s", 4, 7, 8, 4), BreathExercise(2, "Cuadrada", "4s cada fase", 4, 4, 4, 5), BreathExercise(3, "Calma Rápida", "Inhala 3s, exhala 6s", 3, 0, 6, 5), BreathExercise(4, "Energía", "Inhala 6s, exhala 2s", 6, 0, 2, 8), BreathExercise(5, "Anti-Ansiedad", "5-5-10", 5, 5, 10, 3), BreathExercise(6, "Sueño", "4-7-8 x10", 4, 7, 8, 10), BreathExercise(7, "Consciente", "Libre con guía", 5, 0, 5, 3))
@@ -171,7 +171,7 @@ private fun BreathingScreen(isDark: Boolean, onBack: () -> Unit) {
 }
 
 // ============ DIARIO ============
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 private fun DiaryScreen(entries: List<DiaryEntry>, isDark: Boolean, onSave: (String, String, String) -> Unit, onDelete: (Int) -> Unit, onBack: () -> Unit) {
     var mood by remember { mutableStateOf("") }
@@ -198,7 +198,7 @@ private fun DiaryScreen(entries: List<DiaryEntry>, isDark: Boolean, onSave: (Str
 }
 
 // ============ EMERGENCIA ============
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 private fun EmergencyScreen(isDark: Boolean, onBack: () -> Unit) {
     val contacts = listOf(EmerContact(1, "Línea de la Vida", "800-911-2000", "Crisis 24/7", "México"), EmerContact(2, "SAPTEL", "55-5259-8121", "Apoyo psicológico", "México"), EmerContact(3, "Línea 135", "135", "Suicida", "Argentina"), EmerContact(4, "Línea 106", "106", "Salud mental", "Colombia"), EmerContact(5, "Teléfono Esperanza", "717-003-717", "Apoyo", "España"), EmerContact(6, "Línea 024", "024", "Suicida", "España"), EmerContact(7, "Salud Responde", "600-360-7777", "Orientación", "Chile"), EmerContact(8, "Línea 113", "113", "Salud mental", "Perú"), EmerContact(9, "Crisis Text", "741741", "Envía HOME", "Internacional"))
@@ -219,7 +219,7 @@ private fun EmergencyScreen(isDark: Boolean, onBack: () -> Unit) {
 }
 
 // ============ JUEGOS ============
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 private fun GamesScreen(isDark: Boolean, onBack: () -> Unit) {
     val games = listOf(GameItem("Memoria", Icons.Default.GridView, "Encuentra las parejas"), GameItem("Snake", Icons.Default.TrendingUp, "La serpiente clásica"), GameItem("Quiz", Icons.Default.Quiz, "Preguntas y respuestas"))
@@ -231,7 +231,7 @@ private fun GamesScreen(isDark: Boolean, onBack: () -> Unit) {
 }
 
 // ============ BIBLIOTECA ============
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 private fun LibraryScreen(isDark: Boolean, onBack: () -> Unit) {
     val items = listOf("Matemáticas - Álgebra básica" to "DOC-A1B2C3", "Español - Comprensión lectora" to "DOC-X9Y8Z7", "Ciencias - El sistema solar" to "DOC-M4N5O6")
@@ -241,8 +241,6 @@ private fun LibraryScreen(isDark: Boolean, onBack: () -> Unit) {
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) { val s = items.size; for (i in 0 until s) { val (title, author) = items[i]; item(key = "lib_$i") { Card(shape = RoundedCornerShape(16.dp)) { Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.MenuBook, null, tint = DarkPalette.Primary, modifier = Modifier.size(40.dp)); Spacer(Modifier.width(12.dp)); Column(modifier = Modifier.weight(1f)) { Text(title, fontWeight = FontWeight.Bold); Text("Por: $author", style = MaterialTheme.typography.bodySmall) }; Icon(Icons.Default.Download, "Descargar", tint = DarkPalette.Info) } } } } }
     }
 }
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MenuCard(title: String, icon: ImageVector, desc: String, c1: Color, c2: Color, onClick: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth().aspectRatio(1f).clickable(onClick = onClick), shape = RoundedCornerShape(20.dp), elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)) {
