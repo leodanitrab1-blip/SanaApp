@@ -52,7 +52,7 @@ class NeuralMemory(private val context: Context) {
     }
     
     fun rememberMood(userId: String, mood: String, intensity: Int, context: String) {
-        val profile = loadProfile(userId)
+        var profile = loadProfile(userId)
         profile.moodHistory.add(MoodEntry(mood, intensity, System.currentTimeMillis(), context))
         if (profile.moodHistory.size > 100) profile.moodHistory.removeAt(0)
         profile.lastSeen = System.currentTimeMillis()
@@ -60,13 +60,13 @@ class NeuralMemory(private val context: Context) {
     }
     
     fun addInterest(userId: String, interest: String) {
-        val profile = loadProfile(userId)
+        var profile = loadProfile(userId)
         if (!profile.interests.contains(interest)) profile.interests.add(interest)
         saveProfile(userId, profile)
     }
     
     fun getEmotionalPattern(userId: String): Map<String, Int> {
-        val profile = loadProfile(userId)
+        var profile = loadProfile(userId)
         return profile.moodHistory.groupBy { it.mood }.mapValues { it.value.size }
     }
     
@@ -76,7 +76,7 @@ class NeuralMemory(private val context: Context) {
     }
     
     fun getEmotionalGrowth(userId: String): Float {
-        val profile = loadProfile(userId)
+        var profile = loadProfile(userId)
         val recent = profile.moodHistory.takeLast(10)
         if (recent.isEmpty()) return 0f
         val positive = recent.count { it.mood in listOf("HAPPY", "CALM") }

@@ -21,7 +21,7 @@ class SanaAI(private val context: Context) {
     private val notifier = NotificationEngine(context)
     
     suspend fun initialize(userId: String): UserProfile = withContext(Dispatchers.IO) {
-        val profile = memory.loadProfile(userId)
+        var profile = memory.loadProfile(userId)
         notifier.createNotificationChannel()
         if (profile.preferredName.isNotEmpty()) {
             notifier.scheduleMotivationalNotifications(profile)
@@ -30,7 +30,7 @@ class SanaAI(private val context: Context) {
     }
     
     suspend fun chat(userId: String, message: String): String = withContext(Dispatchers.IO) {
-        val profile = memory.loadProfile(userId)
+        var profile = memory.loadProfile(userId)
         val processed = processor.process(message, profile.preferredName, profile)
         
         // Aprender del usuario
