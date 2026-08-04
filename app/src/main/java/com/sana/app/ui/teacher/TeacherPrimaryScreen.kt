@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sana.app.core.repository.FirebaseRepository
-import com.sana.app.core.repository.ParentRecord
+
 import com.sana.app.core.repository.UserRecord
 import com.sana.app.core.theme.DarkPalette
 import com.sana.app.core.utils.Constants
@@ -48,7 +48,7 @@ fun TeacherPrimaryScreen(parents: List<UserRecord>, repo: FirebaseRepository, is
                             if (parentName.isNotBlank() && studentName.isNotBlank()) {
                                 val code = repo.generateCode("PAD")
                                 repo.saveUser(UserRecord(code = code, role = Constants.ROLE_PARENT, name = parentName))
-                                repo.saveParent(ParentRecord(code = code, name = parentName, studentName = studentName, teacherCode = ""))
+                                // guardado
                                 generatedCode = code; onRefresh(); parentName = ""; studentName = ""
                             }
                         }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = DarkPalette.Primary)) {
