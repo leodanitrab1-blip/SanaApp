@@ -9,18 +9,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.sana.app.core.theme.SanaTheme
 import com.sana.app.core.theme.ThemeManager
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    @Inject
-    lateinit var themeManager: ThemeManager
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val themeManager = ThemeManager(applicationContext)
         setContent {
             SanaTheme(themeManager = themeManager) {
                 Surface(modifier = Modifier.fillMaxSize()) {

@@ -1,19 +1,19 @@
 package com.sana.app.ui.login
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.sana.app.core.repository.FirebaseRepository
 import com.sana.app.core.repository.UserRecord
 import com.sana.app.core.utils.Constants
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class LoginViewModel @Inject constructor(private val repo: FirebaseRepository) : ViewModel() {
+class LoginViewModel(application: Application) : AndroidViewModel(application) {
+    private val repo = FirebaseRepository(application)
+    
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
@@ -39,7 +39,6 @@ class LoginViewModel @Inject constructor(private val repo: FirebaseRepository) :
         repo.saveUser(UserRecord(code = code, role = Constants.ROLE_STUDENT, name = name))
         return code
     }
-
     fun clearError() { _uiState.value = _uiState.value.copy(error = null) }
 }
 

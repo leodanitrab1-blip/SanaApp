@@ -32,7 +32,7 @@ fun LoginScreen(
     loginType: LoginType = LoginType.SCHOOL,
     onLoginSuccess: (Long, String) -> Unit,
     onBack: () -> Unit,
-    viewModel: LoginViewModel = hiltViewModel(),
+    viewModel: LoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     themeManager: ThemeManager
 ) {
     val uiState by viewModel.uiState.collectAsState()
