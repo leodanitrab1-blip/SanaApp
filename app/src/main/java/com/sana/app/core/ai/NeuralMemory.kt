@@ -3,38 +3,22 @@ package com.sana.app.core.ai
 import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import java.util.*
 
-/**
- * 🧠 Neural Memory Engine
- * Sistema de memoria emocional que recuerda:
- * - Nombre preferido del usuario
- * - Gustos e intereses
- * - Historial emocional (estados de ánimo pasados)
- * - Patrones de conversación
- * - Temas sensibles
- * - Logros y momentos importantes
- */
 data class UserProfile(
-    val preferredName: String = "",
+    var preferredName: String = "",
     val interests: MutableList<String> = mutableListOf(),
     val moodHistory: MutableList<MoodEntry> = mutableListOf(),
     val conversationTopics: MutableMap<String, Int> = mutableMapOf(),
     val sensitiveTopics: MutableList<String> = mutableListOf(),
     val achievements: MutableList<String> = mutableListOf(),
     val firstSeen: Long = System.currentTimeMillis(),
-    val lastSeen: Long = System.currentTimeMillis(),
-    val totalConversations: Int = 0,
-    val emotionalGrowth: Float = 0f
+    var lastSeen: Long = System.currentTimeMillis(),
+    var totalConversations: Int = 0,
+    var emotionalGrowth: Float = 0f
 )
 
-data class MoodEntry(
-    val mood: String,
-    val intensity: Int,
-    val timestamp: Long,
-    val context: String
-)
+data class MoodEntry(val mood: String, val intensity: Int, val timestamp: Long, val context: String)
 
 class NeuralMemory(private val context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("sana_neural_memory", Context.MODE_PRIVATE)
@@ -66,7 +50,7 @@ class NeuralMemory(private val context: Context) {
     }
     
     fun getEmotionalPattern(userId: String): Map<String, Int> {
-        var profile = loadProfile(userId)
+        val profile = loadProfile(userId)
         return profile.moodHistory.groupBy { it.mood }.mapValues { it.value.size }
     }
     
@@ -76,8 +60,8 @@ class NeuralMemory(private val context: Context) {
     }
     
     fun getEmotionalGrowth(userId: String): Float {
-        var profile = loadProfile(userId)
-        var recent = profile.moodHistory.takeLast(10)
+        val profile = loadProfile(userId)
+        val recent = profile.moodHistory.takeLast(10)
         if (recent.isEmpty()) return 0f
         val positive = recent.count { it.mood in listOf("HAPPY", "CALM") }
         return positive.toFloat() / recent.size

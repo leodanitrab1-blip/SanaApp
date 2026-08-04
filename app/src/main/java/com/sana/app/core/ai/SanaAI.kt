@@ -4,16 +4,6 @@ import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-/**
- * 🤖 SANA AI - Orquestador Central
- * 
- * La inteligencia artificial más avanzada de apoyo emocional.
- * Combina:
- * - NeuralMemory: Memoria emocional a largo plazo
- * - LanguageProcessor: Comprensión de lenguaje natural
- * - EmotionalEngine: Generación de respuestas empáticas
- * - NotificationEngine: Notificaciones motivadoras
- */
 class SanaAI(private val context: Context) {
     private val memory = NeuralMemory(context)
     private val processor = LanguageProcessor()
@@ -21,7 +11,7 @@ class SanaAI(private val context: Context) {
     private val notifier = NotificationEngine(context)
     
     suspend fun initialize(userId: String): UserProfile = withContext(Dispatchers.IO) {
-        var profile = memory.loadProfile(userId)
+        val profile = memory.loadProfile(userId)
         notifier.createNotificationChannel()
         if (profile.preferredName.isNotEmpty()) {
             notifier.scheduleMotivationalNotifications(profile)
@@ -32,36 +22,20 @@ class SanaAI(private val context: Context) {
     suspend fun chat(userId: String, message: String): String = withContext(Dispatchers.IO) {
         var profile = memory.loadProfile(userId)
         val processed = processor.process(message, profile.preferredName, profile)
-        
-        // Aprender del usuario
         learnFromInteraction(userId, message, processed, profile)
-        
-        // Generar respuesta
         engine.generateResponse(processed, profile, memory, userId)
     }
     
     private fun learnFromInteraction(userId: String, message: String, processed: LanguageProcessor.ProcessedInput, profile: UserProfile) {
-        // Recordar nombre si lo menciona
         if (processed.entities.containsKey("name")) {
             profile.preferredName = processed.entities["name"]!!
         }
-        
-        // Detectar intereses
         if (message.contains("me gusta") || message.contains("amo") || message.contains("disfruto")) {
             val interest = message.split("me gusta", "amo", "disfruto").lastOrNull()?.trim()?.take(30) ?: ""
             if (interest.isNotEmpty()) memory.addInterest(userId, interest)
         }
-        
-        // Registrar estado de ánimo
-        val mood = when (processed.sentiment) {
-            "POSITIVE" -> "HAPPY"
-            "NEGATIVE" -> "SAD"
-            "ANXIOUS" -> "ANXIOUS"
-            else -> "NEUTRAL"
-        }
+        val mood = when (processed.sentiment) { "POSITIVE" -> "HAPPY"; "NEGATIVE" -> "SAD"; "ANXIOUS" -> "ANXIOUS"; else -> "NEUTRAL" }
         memory.rememberMood(userId, mood, processed.urgency, message.take(50))
-        
-        // Actualizar perfil
         profile.totalConversations++
         profile.lastSeen = System.currentTimeMillis()
         memory.saveProfile(userId, profile)
@@ -70,4 +44,3 @@ class SanaAI(private val context: Context) {
     fun getProfile(userId: String): UserProfile = memory.loadProfile(userId)
     fun getEmotionalGrowth(userId: String): Float = memory.getEmotionalGrowth(userId)
 }
-// Force rebuild
