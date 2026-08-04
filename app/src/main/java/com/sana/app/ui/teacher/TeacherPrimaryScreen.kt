@@ -75,7 +75,7 @@ fun TeacherPrimaryScreen(parents: List<UserRecord>, repo: FirebaseRepository, is
                         items(parents) { p ->
                             Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else DarkPalette.Surface)) {
                                 Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Surface(modifier = Modifier.size(44.dp), shape = RoundedCornerShape(22.dp), color = DarkPalette.Info) { Box(contentAlignment = Alignment.Center) { Text((p.name).take(1).uppercase(), color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.Bold) } }
+                                    Surface(modifier = Modifier.size(44.dp), shape = RoundedCornerShape(22.dp), color = DarkPalette.Info) { Box(contentAlignment = Alignment.Center) { Text(p.name.take(1).uppercase(), color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.Bold) } }
                                     Spacer(Modifier.width(12.dp))
                                     Column(modifier = Modifier.weight(1f)) { Text(p.name, fontWeight = FontWeight.Bold); Text("🔑 ${p.code}", style = MaterialTheme.typography.bodySmall, color = DarkPalette.TextMuted) }
                                 }
