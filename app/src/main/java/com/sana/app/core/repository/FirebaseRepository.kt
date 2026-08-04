@@ -60,7 +60,7 @@ class FirebaseRepository @Inject constructor(@ApplicationContext private val con
     
     private fun <T> saveLocal(key: String, item: T) {
         val list: MutableList<T> = getLocal(key).toMutableList(); list.add(item)
-        prefs.edit().putString(key, gson.toJson(list.distinct())).apply()
+        prefs.edit().putString(key, gson.toJson(list)).apply()
     }
     
     private inline fun <reified T> getLocal(key: String): List<T> {
