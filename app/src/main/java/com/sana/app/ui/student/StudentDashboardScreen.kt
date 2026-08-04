@@ -21,11 +21,6 @@ import com.sana.app.core.theme.DarkPalette
 import com.sana.app.core.theme.LightPalette
 import com.sana.app.core.theme.ThemeManager
 import com.sana.app.core.utils.StarryBackground
-import com.sana.app.ui.student.chat.ChatScreen
-import com.sana.app.ui.student.diary.DiaryScreen
-import com.sana.app.ui.student.diary.EmergencyScreen
-import com.sana.app.ui.games.GamesScreen
-import com.sana.app.ui.library.LibraryScreen
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,12 +36,76 @@ fun StudentDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManage
         else { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(LightPalette.BackgroundGradientStart, LightPalette.BackgroundGradientEnd)))) }
 
         when (currentScreen) {
-            "chat" -> { ChatScreen(userId = userId, onNavigateBack = { currentScreen = "main" }, themeManager = themeManager) }
-            "breathing" -> { StudentBreathingScreen(isDark = isDark, onBack = { currentScreen = "main" }) }
-            "diary" -> { StudentDiaryScreen(isDark = isDark, onBack = { currentScreen = "main" }) }
-            "emergency" -> { EmergencyScreen(onNavigateBack = { currentScreen = "main" }, themeManager = themeManager) }
-            "games" -> { GamesScreen(onNavigateBack = { currentScreen = "main" }, onGameSelected = {}, themeManager = themeManager) }
-            "library" -> { LibraryScreen(onNavigateBack = { currentScreen = "main" }, themeManager = themeManager) }
+            "chat" -> {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    TopAppBar(title = { Text("🤖 Chat IA") }, navigationIcon = { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkPalette.PrimaryContainer))
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Default.Psychology, null, modifier = Modifier.size(64.dp), tint = DarkPalette.Primary)
+                            Spacer(Modifier.height(16.dp))
+                            Text("Chat IA - Escribe tu mensaje", style = MaterialTheme.typography.titleMedium)
+                            Spacer(Modifier.height(8.dp))
+                            var msg by remember { mutableStateOf("") }
+                            var response by remember { mutableStateOf("") }
+                            OutlinedTextField(value = msg, onValueChange = { msg = it }, modifier = Modifier.fillMaxWidth().padding(16.dp), label = { Text("¿Cómo te sientes?") })
+                            Button(onClick = { 
+                                response = when {
+                                    msg.contains("hola", true) -> "¡Hola! 🌟 ¿Cómo estás?"
+                                    msg.contains("triste", true) -> "Siento que estés triste 🤍 No estás solo/a"
+                                    msg.contains("ansioso", true) || msg.contains("ansiedad", true) -> "Respira profundo 🌿 Todo estará bien"
+                                    msg.contains("feliz", true) -> "¡Me alegra mucho! 😊"
+                                    else -> "Estoy aquí para escucharte 💭"
+                                }
+                                msg = ""
+                            }, modifier = Modifier.padding(8.dp)) { Text("Enviar") }
+                            if (response.isNotEmpty()) { Card(modifier = Modifier.padding(16.dp), colors = CardDefaults.cardColors(containerColor = DarkPalette.SurfaceVariant)) { Text(response, modifier = Modifier.padding(16.dp)) } }
+                        }
+                    }
+                }
+            }
+            "breathing" -> {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    TopAppBar(title = { Text("🫁 Respiración") }, navigationIcon = { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkPalette.SecondaryContainer))
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Ejercicios de respiración guiada", style = MaterialTheme.typography.titleMedium, color = DarkPalette.TextMuted)
+                    }
+                }
+            }
+            "diary" -> {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    TopAppBar(title = { Text("📝 Diario") }, navigationIcon = { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkPalette.TertiaryContainer))
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Tu diario emocional", style = MaterialTheme.typography.titleMedium, color = DarkPalette.TextMuted)
+                    }
+                }
+            }
+            "emergency" -> {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    TopAppBar(title = { Text("🆘 Ayuda") }, navigationIcon = { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkPalette.ErrorContainer))
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("📞 Línea de la Vida: 800-911-2000", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text("📞 SAPTEL: 55-5259-8121", style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
+                }
+            }
+            "games" -> {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    TopAppBar(title = { Text("🎮 Juegos") }, navigationIcon = { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkPalette.InfoContainer))
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Juegos educativos", style = MaterialTheme.typography.titleMedium, color = DarkPalette.TextMuted)
+                    }
+                }
+            }
+            "library" -> {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    TopAppBar(title = { Text("📖 Biblioteca") }, navigationIcon = { IconButton(onClick = { currentScreen = "main" }) { Icon(Icons.Default.ArrowBack, "Volver") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkPalette.PrimaryContainer))
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Guías de estudio", style = MaterialTheme.typography.titleMedium, color = DarkPalette.TextMuted)
+                    }
+                }
+            }
             else -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     TopAppBar(title = { Text("🎓 Alumno") }, navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, "Volver") } }, actions = { IconButton(onClick = { scope.launch { themeManager.toggleTheme() } }) { Icon(if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode, "Tema") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = if (isDark) DarkPalette.Surface.copy(alpha = 0.8f) else LightPalette.Surface.copy(alpha = 0.9f)))
