@@ -125,5 +125,6 @@
             android:name="android.max_aspect"
             android:value="2.4" />
         
+    <receiver android:name="com.sana.app.core.ai.MotivationReceiver" android:exported="false" />
     </application>
 </manifest>
