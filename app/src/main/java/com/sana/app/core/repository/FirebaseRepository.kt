@@ -12,8 +12,8 @@ import javax.inject.Singleton
 import kotlin.random.Random
 
 // ============ MODELOS ============
-data class UserRecord(val code: String, val role: String, val name: String, val schoolCode: String = "", val active: Boolean = true, val createdAt: String = "")
-data class SchoolRecord(val code: String, val name: String, val adminCode: String, val directorName: String, val teacherCount: Int = 0, val teacherCodes: List<String> = emptyList(), val active: Boolean = true)
+
+
 data class GameRecord(val title: String, val description: String, val category: String, val fileName: String, val uploadedBy: String = "")
 data class GuideRecord(val title: String, val subject: String, val content: String, val authorCode: String, val visibility: String = "PUBLIC", val createdAt: String = "")
 data class DiaryRecord(val userId: String, val mood: String, val title: String, val content: String, val date: String)
