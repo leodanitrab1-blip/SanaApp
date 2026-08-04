@@ -1,3 +1,5 @@
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 package com.sana.app.ui.admin
 
 import android.content.Context
@@ -103,12 +105,12 @@ fun AdminDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManager:
                 Column(modifier = Modifier.fillMaxSize()) {
                     TopAppBar(title = { Text("⚙️ Administración") }, navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, "Volver") } }, actions = { IconButton(onClick = { scope.launch { themeManager.toggleTheme() } }) { Icon(if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode, "Tema") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = if (isDark) DarkPalette.Surface.copy(alpha = 0.8f) else LightPalette.Surface.copy(alpha = 0.9f)))
                     LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        item { AdminCard("Registrar\nEscuela", Icons.Default.AddBusiness, "Crear nueva", DarkPalette.Primary, DarkPalette.PrimaryVariant) { showRegister = true } }
-                        item { AdminCard("Ver\nEscuelas", Icons.Default.ListAlt, "${schools.size} reg.", DarkPalette.Secondary, DarkPalette.SecondaryVariant) { schools = repo.getAllSchools(); showSchools = true } }
-                        item { AdminCard("Códigos", Icons.Default.Key, "${users.size} usuarios", DarkPalette.Tertiary, DarkPalette.TertiaryContainer) { users = repo.getAllUsers(); showCodes = true } }
-                        item { AdminCard("Juegos", Icons.Default.Games, "Gestionar", DarkPalette.Info, DarkPalette.InfoContainer) { message = "📦 Próximamente" } }
-                        item { AdminCard("Moderar", Icons.Default.Gavel, "Contenido", DarkPalette.Warning, DarkPalette.WarningContainer) { message = "📦 Próximamente" } }
-                        item { AdminCard("Salir", Icons.Default.Logout, "Cerrar sesión", DarkPalette.Error, DarkPalette.ErrorContainer) { onNavigateBack() } }
+                        item { AdminMenuCard("Registrar\nEscuela", Icons.Default.AddBusiness, "Crear nueva", DarkPalette.Primary, DarkPalette.PrimaryVariant) { showRegister = true } }
+                        item { AdminMenuCard("Ver\nEscuelas", Icons.Default.ListAlt, "${schools.size} reg.", DarkPalette.Secondary, DarkPalette.SecondaryVariant) { schools = repo.getAllSchools(); showSchools = true } }
+                        item { AdminMenuCard("Códigos", Icons.Default.Key, "${users.size} usuarios", DarkPalette.Tertiary, DarkPalette.TertiaryContainer) { users = repo.getAllUsers(); showCodes = true } }
+                        item { AdminMenuCard("Juegos", Icons.Default.Games, "Gestionar", DarkPalette.Info, DarkPalette.InfoContainer) { message = "📦 Próximamente" } }
+                        item { AdminMenuCard("Moderar", Icons.Default.Gavel, "Contenido", DarkPalette.Warning, DarkPalette.WarningContainer) { message = "📦 Próximamente" } }
+                        item { AdminMenuCard("Salir", Icons.Default.Logout, "Cerrar sesión", DarkPalette.Error, DarkPalette.ErrorContainer) { onNavigateBack() } }
                     }
                 }
             }
@@ -117,7 +119,7 @@ fun AdminDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManager:
 }
 
 @Composable
-private fun AdminCard(title: String, icon: ImageVector, desc: String, c1: androidx.compose.ui.graphics.Color, c2: androidx.compose.ui.graphics.Color, onClick: () -> Unit) {
+private fun AdminMenuCard(title: String, icon: ImageVector, desc: String, c1: androidx.compose.ui.graphics.Color, c2: androidx.compose.ui.graphics.Color, onClick: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth().aspectRatio(1f).clickable(onClick = onClick), shape = RoundedCornerShape(20.dp)) {
         Box(modifier = Modifier.fillMaxSize().background(Brush.horizontalGradient(listOf(c1, c2))), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) { Icon(icon, title, modifier = Modifier.size(40.dp), tint = androidx.compose.ui.graphics.Color.White); Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = androidx.compose.ui.graphics.Color.White, textAlign = TextAlign.Center); Text(desc, style = MaterialTheme.typography.bodySmall, color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.8f), textAlign = TextAlign.Center) }

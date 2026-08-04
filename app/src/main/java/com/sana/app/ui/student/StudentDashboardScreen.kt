@@ -36,21 +36,24 @@ fun StudentDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManage
         else { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(LightPalette.BackgroundGradientStart, LightPalette.BackgroundGradientEnd)))) }
 
         when (currentScreen) {
-            "chat" -> {
-                try { com.sana.app.ui.student.chat.ChatScreen(userId = userId, onNavigateBack = { currentScreen = "main" }, themeManager = themeManager) } catch (e: Exception) { currentScreen = "main" }
-            }
+            "chat" -> { ChatScreen(userId = userId, onNavigateBack = { currentScreen = "main" }, themeManager = themeManager) }
+            "breathing" -> { StudentBreathingScreen(isDark = isDark, onBack = { currentScreen = "main" }) }
+            "diary" -> { StudentDiaryScreen(isDark = isDark, onBack = { currentScreen = "main" }) }
+            "emergency" -> { EmergencyScreen(onNavigateBack = { currentScreen = "main" }, themeManager = themeManager) }
+            "games" -> { GamesScreen(onNavigateBack = { currentScreen = "main" }, onGameSelected = {}, themeManager = themeManager) }
+            "library" -> { LibraryScreen(onNavigateBack = { currentScreen = "main" }, themeManager = themeManager) }
             else -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     TopAppBar(title = { Text("🎓 Alumno") }, navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, "Volver") } }, actions = { IconButton(onClick = { scope.launch { themeManager.toggleTheme() } }) { Icon(if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode, "Tema") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = if (isDark) DarkPalette.Surface.copy(alpha = 0.8f) else LightPalette.Surface.copy(alpha = 0.9f)))
                     LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        item { StudentCard("🤖 Chat IA", Icons.Default.Psychology, DarkPalette.Primary) { currentScreen = "chat" } }
-                        item { StudentCard("🫁 Respiración", Icons.Default.Air, DarkPalette.Secondary) { } }
-                        item { StudentCard("📝 Diario", Icons.Default.Book, DarkPalette.Tertiary) { } }
-                        item { StudentCard("🆘 Ayuda", Icons.Default.Sos, DarkPalette.Error) { } }
-                        item { StudentCard("🎮 Juegos", Icons.Default.Games, DarkPalette.MoodHappy) { } }
-                        item { StudentCard("📖 Biblioteca", Icons.Default.LibraryBooks, DarkPalette.Info) { } }
-                        item { StudentCard("📬 Buzón", Icons.Default.Email, DarkPalette.MoodCalm) { } }
-                        item { StudentCard("🚪 Salir", Icons.Default.Logout, DarkPalette.Warning) { onNavigateBack() } }
+                        item { StudentCard("🤖 Chat IA", Icons.Default.Psychology, DarkPalette.Primary, DarkPalette.PrimaryVariant) { currentScreen = "chat" } }
+                        item { StudentCard("🫁 Respiración", Icons.Default.Air, DarkPalette.Secondary, DarkPalette.SecondaryVariant) { currentScreen = "breathing" } }
+                        item { StudentCard("📝 Diario", Icons.Default.Book, DarkPalette.Tertiary, DarkPalette.TertiaryContainer) { currentScreen = "diary" } }
+                        item { StudentCard("🆘 Ayuda", Icons.Default.Sos, DarkPalette.Error, DarkPalette.ErrorContainer) { currentScreen = "emergency" } }
+                        item { StudentCard("🎮 Juegos", Icons.Default.Games, DarkPalette.MoodHappy, DarkPalette.Warning) { currentScreen = "games" } }
+                        item { StudentCard("📖 Biblioteca", Icons.Default.LibraryBooks, DarkPalette.Info, DarkPalette.InfoContainer) { currentScreen = "library" } }
+                        item { StudentCard("📬 Buzón", Icons.Default.Email, DarkPalette.MoodCalm, DarkPalette.Success) { } }
+                        item { StudentCard("🚪 Salir", Icons.Default.Logout, DarkPalette.Warning, DarkPalette.Error) { onNavigateBack() } }
                     }
                 }
             }
@@ -59,9 +62,9 @@ fun StudentDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManage
 }
 
 @Composable
-private fun StudentCard(title: String, icon: ImageVector, color: androidx.compose.ui.graphics.Color, onClick: () -> Unit) {
+private fun StudentCard(title: String, icon: ImageVector, c1: androidx.compose.ui.graphics.Color, c2: androidx.compose.ui.graphics.Color, onClick: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth().aspectRatio(1f).clickable(onClick = onClick), shape = RoundedCornerShape(20.dp)) {
-        Box(modifier = Modifier.fillMaxSize().background(Brush.horizontalGradient(listOf(color, color))), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.fillMaxSize().background(Brush.horizontalGradient(listOf(c1, c2))), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) { Icon(icon, title, modifier = Modifier.size(40.dp), tint = androidx.compose.ui.graphics.Color.White); Spacer(Modifier.height(8.dp)); Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = androidx.compose.ui.graphics.Color.White, textAlign = TextAlign.Center) }
         }
     }
