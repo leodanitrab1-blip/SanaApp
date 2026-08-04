@@ -1,5 +1,5 @@
 import com.sana.app.core.ai.SanaAI
-@file:OptIn(ExperimentalMaterial3Api::class)
+import com.sana.app.core.ai.SanaAI
 import com.sana.app.core.ai.SanaAI
 
 
