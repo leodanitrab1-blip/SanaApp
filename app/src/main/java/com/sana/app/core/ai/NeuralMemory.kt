@@ -77,7 +77,7 @@ class NeuralMemory(private val context: Context) {
     
     fun getEmotionalGrowth(userId: String): Float {
         var profile = loadProfile(userId)
-        val recent = profile.moodHistory.takeLast(10)
+        var recent = profile.moodHistory.takeLast(10)
         if (recent.isEmpty()) return 0f
         val positive = recent.count { it.mood in listOf("HAPPY", "CALM") }
         return positive.toFloat() / recent.size
