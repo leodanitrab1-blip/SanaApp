@@ -1,3 +1,9 @@
+import com.sana.app.ui.student.StudentDiaryScreen
+import com.sana.app.ui.student.StudentBreathingScreen
+import com.sana.app.ui.library.LibraryScreen
+import com.sana.app.ui.games.GamesScreen
+import com.sana.app.ui.student.diary.EmergencyScreen
+import com.sana.app.ui.student.chat.ChatScreen
 package com.sana.app.ui.student
 
 import androidx.compose.foundation.background
