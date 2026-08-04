@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "275782868691",
+    "project_id": "sana-app-85aa0",
+    "storage_bucket": "sana-app-85aa0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:275782868691:android:b5cfa8623c153ee7f3be26",
+        "android_client_info": {
+          "package_name": "com.sana.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzkdDJosTJTubAAwxAA1ezhZA9zXXdg9o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
