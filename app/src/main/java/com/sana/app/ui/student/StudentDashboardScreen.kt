@@ -1,9 +1,3 @@
-import com.sana.app.ui.student.StudentDiaryScreen
-import com.sana.app.ui.student.StudentBreathingScreen
-import com.sana.app.ui.library.LibraryScreen
-import com.sana.app.ui.games.GamesScreen
-import com.sana.app.ui.student.diary.EmergencyScreen
-import com.sana.app.ui.student.chat.ChatScreen
 package com.sana.app.ui.student
 
 import androidx.compose.foundation.background
@@ -27,6 +21,11 @@ import com.sana.app.core.theme.DarkPalette
 import com.sana.app.core.theme.LightPalette
 import com.sana.app.core.theme.ThemeManager
 import com.sana.app.core.utils.StarryBackground
+import com.sana.app.ui.student.chat.ChatScreen
+import com.sana.app.ui.student.diary.DiaryScreen
+import com.sana.app.ui.student.diary.EmergencyScreen
+import com.sana.app.ui.games.GamesScreen
+import com.sana.app.ui.library.LibraryScreen
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
