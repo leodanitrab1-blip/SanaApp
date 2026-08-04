@@ -2,16 +2,20 @@ package com.sana.app.ui.student
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import com.sana.app.core.theme.DarkPalette
 import com.sana.app.core.theme.LightPalette
 import com.sana.app.core.theme.ThemeManager
 import com.sana.app.core.utils.StarryBackground
-import com.sana.app.ui.student.breathing.BreathingScreen
 import com.sana.app.ui.student.chat.ChatScreen
-import com.sana.app.ui.student.diary.DiaryScreen
 import com.sana.app.ui.student.diary.EmergencyScreen
 import com.sana.app.ui.games.GamesScreen
 import com.sana.app.ui.library.LibraryScreen
@@ -33,10 +37,10 @@ fun StudentDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManage
             "breathing" -> StudentBreathingScreen(isDark = isDark, onBack = { currentScreen = "main" })
             "diary" -> StudentDiaryScreen(isDark = isDark, onBack = { currentScreen = "main" })
             "emergency" -> EmergencyScreen(onNavigateBack = { currentScreen = "main" }, themeManager = themeManager)
-            "games" -> GamesScreen(onNavigateBack = { currentScreen = "main" }, themeManager = themeManager)
+            "games" -> GamesScreen(onNavigateBack = { currentScreen = "main" }, onGameSelected = {}, themeManager = themeManager)
             "library" -> LibraryScreen(onNavigateBack = { currentScreen = "main" }, themeManager = themeManager)
-            "plans" -> PlaceholderScreen("📚 Planes de Estudio", "Tus planes aparecerán aquí", isDark) { currentScreen = "main" }
-            "inbox" -> PlaceholderScreen("📬 Buzón", "Mensajes y guías de profesores", isDark) { currentScreen = "main" }
+            "plans" -> PlaceholderScreen("📚 Planes", "Próximamente", isDark) { currentScreen = "main" }
+            "inbox" -> PlaceholderScreen("📬 Buzón", "Próximamente", isDark) { currentScreen = "main" }
             else -> StudentMainScreen(diaryCount = 0, breathingSessions = 0, isDark = isDark, onNavigate = { currentScreen = it }, onLogout = onNavigateBack, onToggleTheme = { scope.launch { themeManager.toggleTheme() } })
         }
     }
@@ -45,7 +49,7 @@ fun StudentDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManage
 @Composable
 private fun PlaceholderScreen(title: String, desc: String, isDark: Boolean, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-        Row { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Volver") }; Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
+        Row(verticalAlignment = Alignment.CenterVertically) { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Volver") }; Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) }
         Spacer(Modifier.height(24.dp))
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text(desc, style = MaterialTheme.typography.bodyLarge, color = DarkPalette.TextMuted) }
     }

@@ -68,7 +68,7 @@ fun StudentDiaryScreen(isDark: Boolean, onBack: () -> Unit) {
         else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(entries.reversed()) { entry ->
-                    Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else LightPalette.Surface), elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)) {
+                    Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else DarkPalette.Surface), elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)) {
                         Column(modifier = Modifier.padding(20.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(MOODS.find { it.second == entry.mood }?.first?.split(" ")?.first() ?: "😐", style = MaterialTheme.typography.headlineMedium)
