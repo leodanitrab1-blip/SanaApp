@@ -6,118 +6,105 @@ import com.google.firebase.database.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.random.Random
 
+// ============ MODELOS ============
+data class UserRecord(val code: String, val role: String, val name: String, val schoolCode: String = "", val active: Boolean = true, val createdAt: String = "")
+data class SchoolRecord(val code: String, val name: String, val adminCode: String, val directorName: String, val teacherCount: Int = 0, val teacherCodes: List<String> = emptyList(), val active: Boolean = true)
+data class GameRecord(val title: String, val description: String, val category: String, val fileName: String, val uploadedBy: String = "")
+data class GuideRecord(val title: String, val subject: String, val content: String, val authorCode: String, val visibility: String = "PUBLIC", val createdAt: String = "")
+data class DiaryRecord(val userId: String, val mood: String, val title: String, val content: String, val date: String)
+data class LogbookRecord(val teacherCode: String, val studentName: String, val observation: String, val category: String, val mood: String, val date: String)
+data class AnnouncementRecord(val schoolCode: String, val title: String, val content: String, val priority: String, val date: String)
+data class ParentRecord(val code: String, val name: String, val studentName: String, val teacherCode: String, val active: Boolean = true)
+
 @Singleton
-class FirebaseRepository @Inject constructor(
-    @ApplicationContext private val context: Context
-) {
+class FirebaseRepository @Inject constructor(@ApplicationContext private val context: Context) {
     private val gson = Gson()
-    private val prefs: SharedPreferences = context.getSharedPreferences("sana_db", Context.MODE_PRIVATE)
+    private val prefs = context.getSharedPreferences("sana_db", Context.MODE_PRIVATE)
     private val db = FirebaseDatabase.getInstance()
     
+    private fun safeKey(key: String) = key.replace(".", "_").replace("-", "_").replace("#", "_").replace("$", "_").replace("[", "_").replace("]", "_")
+    
     // ============ GUARDAR EN FIREBASE ============
-    
-    fun saveUser(user: UserRecord) {
-        val key = user.code.replace(".", "_").replace("-", "_").replace("#", "_").replace("$", "_")
-        db.getReference("users").child(key).setValue(user)
-        saveLocalUser(user)
+    fun <T> save(path: String, key: String, data: T) {
+        db.getReference(path).child(safeKey(key)).setValue(data)
     }
     
-    fun saveSchool(school: SchoolRecord) {
-        val key = school.code.replace(".", "_").replace("-", "_").replace("#", "_").replace("$", "_")
-        db.getReference("schools").child(key).setValue(school)
-        saveLocalSchool(school)
-    }
-    
-    // ============ DESCARGAR DE FIREBASE ============
-    
-    suspend fun syncFromFirebase(): Int = withContext(Dispatchers.IO) {
+    // ============ SINCRONIZAR TODO ============
+    suspend fun syncAll(): Int = withContext(Dispatchers.IO) {
         var count = 0
-        try {
-            // Usuarios
-            val usersSnapshot = getRef("users")
-            usersSnapshot?.children?.forEach { child ->
-                try {
-                    val map = child.value as? Map<*, *>
-                    if (map != null) {
-                        val user = UserRecord(
-                            code = map["code"] as? String ?: "",
-                            role = map["role"] as? String ?: "",
-                            name = map["name"] as? String ?: "",
-                            schoolCode = map["schoolCode"] as? String ?: "",
-                            active = map["active"] as? Boolean ?: true,
-                            createdAt = map["createdAt"] as? String ?: ""
-                        )
-                        if (user.code.isNotEmpty()) { saveLocalUser(user); count++ }
-                    }
-                } catch (_: Exception) { }
-            }
-            
-            // Escuelas
-            val schoolsSnapshot = getRef("schools")
-            schoolsSnapshot?.children?.forEach { child ->
-                try {
-                    val map = child.value as? Map<*, *>
-                    if (map != null) {
-                        val school = SchoolRecord(
-                            code = map["code"] as? String ?: "",
-                            name = map["name"] as? String ?: "",
-                            adminCode = map["adminCode"] as? String ?: "",
-                            directorName = map["directorName"] as? String ?: "",
-                            teacherCount = (map["teacherCount"] as? Long)?.toInt() ?: 0,
-                            teacherCodes = (map["teacherCodes"] as? List<*>)?.mapNotNull { it as? String } ?: emptyList(),
-                            active = map["active"] as? Boolean ?: true
-                        )
-                        if (school.code.isNotEmpty()) { saveLocalSchool(school); count++ }
-                    }
-                } catch (_: Exception) { }
-            }
-        } catch (e: Exception) { e.printStackTrace() }
+        val paths = listOf("users", "schools", "games", "guides", "diary", "logbook", "announcements", "parents")
+        paths.forEach { path ->
+            try {
+                val snapshot = getSnapshot(path)
+                snapshot?.children?.forEach { child ->
+                    val json = gson.toJson(child.value)
+                    prefs.edit().putString("fb_${path}_${child.key}", json).apply()
+                    count++
+                }
+            } catch (_: Exception) { }
+        }
         count
     }
     
-    private suspend fun getRef(path: String): DataSnapshot? {
-        return try {
-            kotlinx.coroutines.suspendCancellableCoroutine { cont ->
-                db.getReference(path).get().addOnSuccessListener { cont.resume(it) {} }
-                    .addOnFailureListener { cont.resume(null) {} }
-            }
-        } catch (e: Exception) { null }
+    private suspend fun getSnapshot(path: String): DataSnapshot? {
+        return suspendCancellableCoroutine { cont ->
+            db.getReference(path).get().addOnSuccessListener { cont.resume(it) {} }
+                .addOnFailureListener { cont.resume(null) {} }
+        }
     }
     
-    // ============ BUSCAR ============
+    // ============ USUARIOS ============
+    fun saveUser(user: UserRecord) { save("users", user.code, user); saveLocalList("users", user) }
+    fun getAllUsers(): List<UserRecord> = getLocalList("users")
+    fun findUserByCode(code: String): UserRecord? = getAllUsers().find { it.code.equals(code, ignoreCase = true) && it.active }
     
-    fun findUserByCode(code: String): UserRecord? {
-        return getAllLocalUsers().find { it.code.equals(code, ignoreCase = true) && it.active }
+    // ============ ESCUELAS ============
+    fun saveSchool(school: SchoolRecord) { save("schools", school.code, school); saveLocalList("schools", school) }
+    fun getAllSchools(): List<SchoolRecord> = getLocalList("schools")
+    
+    // ============ JUEGOS ============
+    fun saveGame(game: GameRecord) { save("games", game.fileName, game); saveLocalList("games", game) }
+    fun getAllGames(): List<GameRecord> = getLocalList("games")
+    
+    // ============ GUÍAS ============
+    fun saveGuide(guide: GuideRecord) { save("guides", guide.title, guide); saveLocalList("guides", guide) }
+    fun getAllGuides(): List<GuideRecord> = getLocalList("guides")
+    
+    // ============ DIARIO ============
+    fun saveDiary(entry: DiaryRecord) { save("diary", entry.userId + "_" + entry.date, entry); saveLocalList("diary", entry) }
+    fun getDiaryForUser(userId: String): List<DiaryRecord> = getLocalList<DiaryRecord>("diary").filter { it.userId == userId }
+    
+    // ============ BITÁCORA ============
+    fun saveLogbook(entry: LogbookRecord) { save("logbook", entry.teacherCode + "_" + entry.date, entry); saveLocalList("logbook", entry) }
+    fun getLogbookForTeacher(code: String): List<LogbookRecord> = getLocalList<LogbookRecord>("logbook").filter { it.teacherCode == code }
+    
+    // ============ AVISOS ============
+    fun saveAnnouncement(ann: AnnouncementRecord) { save("announcements", ann.schoolCode + "_" + ann.date, ann); saveLocalList("announcements", ann) }
+    fun getAnnouncementsForSchool(code: String): List<AnnouncementRecord> = getLocalList<AnnouncementRecord>("announcements").filter { it.schoolCode == code }
+    
+    // ============ PADRES ============
+    fun saveParent(parent: ParentRecord) { save("parents", parent.code, parent); saveLocalList("parents", parent) }
+    fun getAllParents(): List<ParentRecord> = getLocalList("parents")
+    
+    // ============ LOCAL CACHE ============
+    private fun <T> saveLocalList(key: String, item: T) {
+        val type = object : TypeToken<MutableList<T>>() {}.type
+        val list: MutableList<T> = try { gson.fromJson(prefs.getString(key, "[]"), type) ?: mutableListOf() } catch (e: Exception) { mutableListOf() }
+        list.add(item)
+        prefs.edit().putString(key, gson.toJson(list.distinct())).apply()
     }
     
-    fun getAllLocalUsers(): List<UserRecord> {
-        val json = prefs.getString("users", "[]") ?: "[]"
-        return try { gson.fromJson(json, object : TypeToken<List<UserRecord>>() {}.type) ?: emptyList() } catch (e: Exception) { emptyList() }
+    private inline fun <reified T> getLocalList(key: String): List<T> {
+        val json = prefs.getString(key, "[]") ?: "[]"
+        return try { gson.fromJson(json, object : TypeToken<List<T>>() {}.type) ?: emptyList() } catch (e: Exception) { emptyList() }
     }
     
-    fun getAllLocalSchools(): List<SchoolRecord> {
-        val json = prefs.getString("schools", "[]") ?: "[]"
-        return try { gson.fromJson(json, object : TypeToken<List<SchoolRecord>>() {}.type) ?: emptyList() } catch (e: Exception) { emptyList() }
-    }
-    
-    private fun saveLocalUser(user: UserRecord) {
-        val users = getAllLocalUsers().toMutableList()
-        users.removeAll { it.code == user.code }; users.add(user)
-        prefs.edit().putString("users", gson.toJson(users)).apply()
-    }
-    
-    private fun saveLocalSchool(school: SchoolRecord) {
-        val schools = getAllLocalSchools().toMutableList()
-        schools.removeAll { it.code == school.code }; schools.add(school)
-        prefs.edit().putString("schools", gson.toJson(schools)).apply()
-    }
-    
+    // ============ UTILIDADES ============
     fun generateCode(prefix: String): String {
         val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         return "$prefix-${(1..6).map { chars[Random.nextInt(chars.length)] }.joinToString("")}"
