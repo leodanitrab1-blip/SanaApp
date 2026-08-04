@@ -13,12 +13,6 @@ import kotlin.random.Random
 
 data class UserRecord(val code: String, val role: String, val name: String, val schoolCode: String = "", val active: Boolean = true, val createdAt: String = "")
 data class SchoolRecord(val code: String, val name: String, val adminCode: String, val directorName: String, val teacherCount: Int = 0, val teacherCodes: List<String> = emptyList(), val active: Boolean = true)
-data class GameRecord(val title: String, val description: String, val category: String, val fileName: String, val uploadedBy: String = "")
-data class GuideRecord(val title: String, val subject: String, val content: String, val authorCode: String, val visibility: String = "PUBLIC", val createdAt: String = "")
-data class DiaryRecord(val userId: String, val mood: String, val title: String, val content: String, val date: String)
-data class LogbookRecord(val teacherCode: String, val studentName: String, val observation: String, val category: String, val mood: String, val date: String)
-data class AnnouncementRecord(val schoolCode: String, val title: String, val content: String, val priority: String, val date: String)
-data class ParentRecord(val code: String, val name: String, val studentName: String, val teacherCode: String, val active: Boolean = true)
 
 @Singleton
 class FirebaseRepository @Inject constructor(@ApplicationContext private val context: Context) {
@@ -28,46 +22,109 @@ class FirebaseRepository @Inject constructor(@ApplicationContext private val con
     
     private fun safeKey(key: String) = key.replace(".", "_").replace("-", "_").replace("#", "_").replace("$", "_").replace("[", "_").replace("]", "_")
     
-    fun save(path: String, key: String, data: Any) { db.getReference(path).child(safeKey(key)).setValue(data) }
-    
-    suspend fun syncAll(): Int = withContext(Dispatchers.IO) {
-        var count = 0
-        listOf("users", "schools").forEach { path ->
-            try { getSnapshot(path)?.children?.forEach { c -> prefs.edit().putString("fb_${path}_${c.key}", gson.toJson(c.value)).apply(); count++ } } catch (_: Exception) { }
-        }; count
+    // ============ GUARDAR ============
+    fun saveUser(user: UserRecord) {
+        db.getReference("users").child(safeKey(user.code)).setValue(user)
+        saveLocalUser(user)
     }
     
-    private suspend fun getSnapshot(path: String): DataSnapshot? = suspendCancellableCoroutine { c -> db.getReference(path).get().addOnSuccessListener { c.resume(it) {} }.addOnFailureListener { c.resume(null) {} } }
+    fun saveSchool(school: SchoolRecord) {
+        db.getReference("schools").child(safeKey(school.code)).setValue(school)
+        saveLocalSchool(school)
+    }
     
-    // ============ USUARIOS ============
-    fun saveUser(user: UserRecord) { save("users", user.code, user); saveLocalUser(user) }
-    fun getAllUsers(): List<UserRecord> = getLocalUsers()
+    // ============ DESCARGAR DE FIREBASE ============
+    suspend fun syncAll(): Int = withContext(Dispatchers.IO) {
+        var count = 0
+        try {
+            // Descargar usuarios
+            val usersSnapshot = getSnapshot("users")
+            usersSnapshot?.children?.forEach { child ->
+                try {
+                    val map = child.value as? Map<*, *>
+                    if (map != null) {
+                        val user = UserRecord(
+                            code = map["code"] as? String ?: "",
+                            role = map["role"] as? String ?: "",
+                            name = map["name"] as? String ?: "",
+                            schoolCode = map["schoolCode"] as? String ?: "",
+                            active = map["active"] as? Boolean ?: true,
+                            createdAt = map["createdAt"] as? String ?: ""
+                        )
+                        if (user.code.isNotEmpty()) { saveLocalUser(user); count++ }
+                    }
+                } catch (_: Exception) { }
+            }
+            
+            // Descargar escuelas
+            val schoolsSnapshot = getSnapshot("schools")
+            schoolsSnapshot?.children?.forEach { child ->
+                try {
+                    val map = child.value as? Map<*, *>
+                    if (map != null) {
+                        val school = SchoolRecord(
+                            code = map["code"] as? String ?: "",
+                            name = map["name"] as? String ?: "",
+                            adminCode = map["adminCode"] as? String ?: "",
+                            directorName = map["directorName"] as? String ?: "",
+                            teacherCount = (map["teacherCount"] as? Long)?.toInt() ?: 0,
+                            teacherCodes = (map["teacherCodes"] as? List<*>)?.mapNotNull { it as? String } ?: emptyList(),
+                            active = map["active"] as? Boolean ?: true
+                        )
+                        if (school.code.isNotEmpty()) { saveLocalSchool(school); count++ }
+                    }
+                } catch (_: Exception) { }
+            }
+        } catch (e: Exception) { e.printStackTrace() }
+        count
+    }
+    
+    private suspend fun getSnapshot(path: String): DataSnapshot? {
+        return suspendCancellableCoroutine { cont ->
+            db.getReference(path).get().addOnSuccessListener { cont.resume(it) {} }
+                .addOnFailureListener { cont.resume(null) {} }
+        }
+    }
+    
+    // ============ LOCALES ============
+    fun getAllUsers(): List<UserRecord> {
+        val json = prefs.getString("users", "[]") ?: "[]"
+        return try { gson.fromJson(json, object : TypeToken<List<UserRecord>>() {}.type) ?: emptyList() } catch (e: Exception) { emptyList() }
+    }
+    
+    fun getAllSchools(): List<SchoolRecord> {
+        val json = prefs.getString("schools", "[]") ?: "[]"
+        return try { gson.fromJson(json, object : TypeToken<List<SchoolRecord>>() {}.type) ?: emptyList() } catch (e: Exception) { emptyList() }
+    }
+    
     fun findUserByCode(code: String): UserRecord? = getAllUsers().find { it.code.equals(code, ignoreCase = true) && it.active }
-    fun deactivateUser(code: String) { val u = getAllUsers().toMutableList(); val i = u.indexOfFirst { it.code == code }; if (i >= 0) { u[i] = u[i].copy(active = false); saveUsers(u); save("users", code, u[i]) } }
     
-    private fun saveLocalUser(user: UserRecord) { val u = getAllUsers().toMutableList(); u.removeAll { it.code == user.code }; u.add(user); saveUsers(u) }
-    private fun getLocalUsers(): List<UserRecord> { val j = prefs.getString("users", "[]") ?: "[]"; return try { gson.fromJson(j, object : TypeToken<List<UserRecord>>() {}.type) ?: emptyList() } catch (e: Exception) { emptyList() } }
-    private fun saveUsers(users: List<UserRecord>) { prefs.edit().putString("users", gson.toJson(users)).apply() }
+    private fun saveLocalUser(user: UserRecord) {
+        val users = getAllUsers().toMutableList()
+        users.removeAll { it.code == user.code }; users.add(user)
+        prefs.edit().putString("users", gson.toJson(users)).apply()
+    }
     
-    // ============ ESCUELAS ============
-    fun saveSchool(school: SchoolRecord) { save("schools", school.code, school); saveLocalSchool(school) }
-    fun getAllSchools(): List<SchoolRecord> { val j = prefs.getString("schools", "[]") ?: "[]"; return try { gson.fromJson(j, object : TypeToken<List<SchoolRecord>>() {}.type) ?: emptyList() } catch (e: Exception) { emptyList() } }
-    private fun saveLocalSchool(school: SchoolRecord) { val s = getAllSchools().toMutableList(); s.removeAll { it.code == school.code }; s.add(school); prefs.edit().putString("schools", gson.toJson(s)).apply() }
+    private fun saveLocalSchool(school: SchoolRecord) {
+        val schools = getAllSchools().toMutableList()
+        schools.removeAll { it.code == school.code }; schools.add(school)
+        prefs.edit().putString("schools", gson.toJson(schools)).apply()
+    }
     
-    // ============ JUEGOS ============
-    fun saveGame(game: GameRecord) { save("games", game.fileName, game) }
-    
-    // ============ OTROS ============
-    fun saveParent(parent: ParentRecord) { save("parents", parent.code, parent) }
-    fun saveDiary(entry: DiaryRecord) { save("diary", entry.userId + "_" + entry.date, entry) }
-    fun saveLogbook(entry: LogbookRecord) { save("logbook", entry.teacherCode + "_" + entry.date, entry) }
-    fun saveAnnouncement(ann: AnnouncementRecord) { save("announcements", ann.schoolCode + "_" + ann.date, ann) }
-    fun saveGuide(guide: GuideRecord) { save("guides", guide.title, guide) }
+    fun deactivateUser(code: String) {
+        val users = getAllUsers().toMutableList()
+        val i = users.indexOfFirst { it.code == code }
+        if (i >= 0) { users[i] = users[i].copy(active = false); prefs.edit().putString("users", gson.toJson(users)).apply(); db.getReference("users").child(safeKey(code)).child("active").setValue(false) }
+    }
     
     fun generateCode(prefix: String): String {
         val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         return "$prefix-${(1..6).map { chars[Random.nextInt(chars.length)] }.joinToString("")}"
     }
     
-    fun initialize() { if (findUserByCode("SANA-ADMIN-2025") == null) saveUser(UserRecord(code = "SANA-ADMIN-2025", role = "ADMIN", name = "Administrador Sana")) }
+    fun initialize() {
+        if (findUserByCode("SANA-ADMIN-2025") == null) {
+            saveUser(UserRecord(code = "SANA-ADMIN-2025", role = "ADMIN", name = "Administrador Sana"))
+        }
+    }
 }
