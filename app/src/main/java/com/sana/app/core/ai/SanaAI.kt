@@ -70,3 +70,4 @@ class SanaAI(private val context: Context) {
     fun getProfile(userId: String): UserProfile = memory.loadProfile(userId)
     fun getEmotionalGrowth(userId: String): Float = memory.getEmotionalGrowth(userId)
 }
+// Force rebuild
