@@ -1,6 +1,5 @@
 package com.sana.app.ui.teacher
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -41,9 +40,9 @@ fun TeacherPrimaryScreen(parents: List<UserRecord>, repo: FirebaseRepository, is
                     Column(modifier = Modifier.padding(20.dp)) {
                         Text("Registrar Padre de Familia", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         Spacer(Modifier.height(16.dp))
-                        OutlinedTextField(value = parentName, onValueChange = { parentName = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Nombre del padre/madre") }, leadingIcon = { Icon(Icons.Default.Person, null) }, shape = RoundedCornerShape(12.dp))
+                        OutlinedTextField(value = parentName, onValueChange = { parentName = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Nombre del padre/madre") }, shape = RoundedCornerShape(12.dp))
                         Spacer(Modifier.height(8.dp))
-                        OutlinedTextField(value = studentName, onValueChange = { studentName = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Nombre del alumno") }, leadingIcon = { Icon(Icons.Default.Face, null) }, shape = RoundedCornerShape(12.dp))
+                        OutlinedTextField(value = studentName, onValueChange = { studentName = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Nombre del alumno") }, shape = RoundedCornerShape(12.dp))
                         Spacer(Modifier.height(16.dp))
                         Button(onClick = {
                             if (parentName.isNotBlank() && studentName.isNotBlank()) {
@@ -53,14 +52,13 @@ fun TeacherPrimaryScreen(parents: List<UserRecord>, repo: FirebaseRepository, is
                                 generatedCode = code; onRefresh(); parentName = ""; studentName = ""
                             }
                         }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = DarkPalette.Primary)) {
-                            Icon(Icons.Default.FamilyRestroom, null, modifier = Modifier.size(20.dp)); Spacer(Modifier.width(8.dp)); Text("Generar Código de Acceso")
+                            Text("Generar Código de Acceso")
                         }
                         if (generatedCode.isNotEmpty()) {
                             Spacer(Modifier.height(16.dp))
                             Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = DarkPalette.SuccessContainer)) {
                                 Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Icon(Icons.Default.CheckCircle, null, tint = DarkPalette.Success, modifier = Modifier.size(32.dp))
-                                    Spacer(Modifier.height(8.dp)); Text("✅ Código generado", fontWeight = FontWeight.Bold)
+                                    Text("✅ Código generado", fontWeight = FontWeight.Bold)
                                     Text(generatedCode, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = DarkPalette.Primary)
                                 }
                             }
@@ -73,9 +71,10 @@ fun TeacherPrimaryScreen(parents: List<UserRecord>, repo: FirebaseRepository, is
                 else {
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(parents) { p ->
+                            val initial = if (p.name.isNotEmpty()) p.name.substring(0, 1).uppercase() else "P"
                             Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = if (isDark) DarkPalette.Surface else DarkPalette.Surface)) {
                                 Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Surface(modifier = Modifier.size(44.dp), shape = RoundedCornerShape(22.dp), color = DarkPalette.Info) { Box(contentAlignment = Alignment.Center) { Text(p.name.take(1).uppercase(), color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.Bold) } }
+                                    Surface(modifier = Modifier.size(44.dp), shape = RoundedCornerShape(22.dp), color = DarkPalette.Info) { Box(contentAlignment = Alignment.Center) { Text(initial, color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.Bold) } }
                                     Spacer(Modifier.width(12.dp))
                                     Column(modifier = Modifier.weight(1f)) { Text(p.name, fontWeight = FontWeight.Bold); Text("🔑 ${p.code}", style = MaterialTheme.typography.bodySmall, color = DarkPalette.TextMuted) }
                                 }

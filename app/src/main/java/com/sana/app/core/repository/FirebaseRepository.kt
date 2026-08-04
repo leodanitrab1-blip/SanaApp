@@ -11,9 +11,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.random.Random
 
-// ============ MODELOS ============
-
-
+data class UserRecord(val code: String, val role: String, val name: String, val schoolCode: String = "", val active: Boolean = true, val createdAt: String = "")
+data class SchoolRecord(val code: String, val name: String, val adminCode: String, val directorName: String, val teacherCount: Int = 0, val teacherCodes: List<String> = emptyList(), val active: Boolean = true)
 data class GameRecord(val title: String, val description: String, val category: String, val fileName: String, val uploadedBy: String = "")
 data class GuideRecord(val title: String, val subject: String, val content: String, val authorCode: String, val visibility: String = "PUBLIC", val createdAt: String = "")
 data class DiaryRecord(val userId: String, val mood: String, val title: String, val content: String, val date: String)
@@ -29,82 +28,46 @@ class FirebaseRepository @Inject constructor(@ApplicationContext private val con
     
     private fun safeKey(key: String) = key.replace(".", "_").replace("-", "_").replace("#", "_").replace("$", "_").replace("[", "_").replace("]", "_")
     
-    // ============ GUARDAR EN FIREBASE ============
-    fun <T> save(path: String, key: String, data: T) {
-        db.getReference(path).child(safeKey(key)).setValue(data)
-    }
+    fun <T> save(path: String, key: String, data: T) { db.getReference(path).child(safeKey(key)).setValue(data) }
     
-    // ============ SINCRONIZAR TODO ============
     suspend fun syncAll(): Int = withContext(Dispatchers.IO) {
         var count = 0
-        val paths = listOf("users", "schools", "games", "guides", "diary", "logbook", "announcements", "parents")
-        paths.forEach { path ->
-            try {
-                val snapshot = getSnapshot(path)
-                snapshot?.children?.forEach { child ->
-                    val json = gson.toJson(child.value)
-                    prefs.edit().putString("fb_${path}_${child.key}", json).apply()
-                    count++
-                }
-            } catch (_: Exception) { }
-        }
-        count
+        listOf("users", "schools", "games", "guides", "diary", "logbook", "announcements", "parents").forEach { path ->
+            try { getSnapshot(path)?.children?.forEach { c -> prefs.edit().putString("fb_${path}_${c.key}", gson.toJson(c.value)).apply(); count++ } } catch (_: Exception) { }
+        }; count
     }
     
-    private suspend fun getSnapshot(path: String): DataSnapshot? {
-        return suspendCancellableCoroutine { cont ->
-            db.getReference(path).get().addOnSuccessListener { cont.resume(it) {} }
-                .addOnFailureListener { cont.resume(null) {} }
-        }
-    }
+    private suspend fun getSnapshot(path: String): DataSnapshot? = suspendCancellableCoroutine { c -> db.getReference(path).get().addOnSuccessListener { c.resume(it) {} }.addOnFailureListener { c.resume(null) {} } }
     
-    // ============ USUARIOS ============
-    fun saveUser(user: UserRecord) { save("users", user.code, user); saveLocalList("users", user) }
-    fun getAllUsers(): List<UserRecord> = getLocalList("users")
+    fun saveUser(user: UserRecord) { save("users", user.code, user); saveLocal("users", user) }
+    fun getAllUsers(): List<UserRecord> = getLocal("users")
     fun findUserByCode(code: String): UserRecord? = getAllUsers().find { it.code.equals(code, ignoreCase = true) && it.active }
     
-    // ============ ESCUELAS ============
-    fun saveSchool(school: SchoolRecord) { save("schools", school.code, school); saveLocalList("schools", school) }
-    fun getAllSchools(): List<SchoolRecord> = getLocalList("schools")
+    fun saveSchool(school: SchoolRecord) { save("schools", school.code, school); saveLocal("schools", school) }
+    fun getAllSchools(): List<SchoolRecord> = getLocal("schools")
     
-    // ============ JUEGOS ============
-    fun saveGame(game: GameRecord) { save("games", game.fileName, game); saveLocalList("games", game) }
-    fun getAllGames(): List<GameRecord> = getLocalList("games")
+    fun saveGame(game: GameRecord) { save("games", game.fileName, game); saveLocal("games", game) }
+    fun getAllGames(): List<GameRecord> = getLocal("games")
     
-    // ============ GUÍAS ============
-    fun saveGuide(guide: GuideRecord) { save("guides", guide.title, guide); saveLocalList("guides", guide) }
-    fun getAllGuides(): List<GuideRecord> = getLocalList("guides")
+    fun saveGuide(guide: GuideRecord) { save("guides", guide.title, guide); saveLocal("guides", guide) }
+    fun getAllGuides(): List<GuideRecord> = getLocal("guides")
     
-    // ============ DIARIO ============
-    fun saveDiary(entry: DiaryRecord) { save("diary", entry.userId + "_" + entry.date, entry); saveLocalList("diary", entry) }
-    fun getDiaryForUser(userId: String): List<DiaryRecord> = getLocalList<DiaryRecord>("diary").filter { it.userId == userId }
+    fun saveDiary(entry: DiaryRecord) { save("diary", entry.userId + "_" + entry.date, entry); saveLocal("diary", entry) }
+    fun saveLogbook(entry: LogbookRecord) { save("logbook", entry.teacherCode + "_" + entry.date, entry); saveLocal("logbook", entry) }
+    fun saveAnnouncement(ann: AnnouncementRecord) { save("announcements", ann.schoolCode + "_" + ann.date, ann); saveLocal("announcements", ann) }
+    fun saveParent(parent: ParentRecord) { save("parents", parent.code, parent); saveLocal("parents", parent) }
+    fun getAllParents(): List<ParentRecord> = getLocal("parents")
     
-    // ============ BITÁCORA ============
-    fun saveLogbook(entry: LogbookRecord) { save("logbook", entry.teacherCode + "_" + entry.date, entry); saveLocalList("logbook", entry) }
-    fun getLogbookForTeacher(code: String): List<LogbookRecord> = getLocalList<LogbookRecord>("logbook").filter { it.teacherCode == code }
-    
-    // ============ AVISOS ============
-    fun saveAnnouncement(ann: AnnouncementRecord) { save("announcements", ann.schoolCode + "_" + ann.date, ann); saveLocalList("announcements", ann) }
-    fun getAnnouncementsForSchool(code: String): List<AnnouncementRecord> = getLocalList<AnnouncementRecord>("announcements").filter { it.schoolCode == code }
-    
-    // ============ PADRES ============
-    fun saveParent(parent: ParentRecord) { save("parents", parent.code, parent); saveLocalList("parents", parent) }
-    fun getAllParents(): List<ParentRecord> = getLocalList("parents")
-    
-    // ============ LOCAL CACHE ============
-    private fun <T> saveLocalList(key: String, item: T) {
-        val type = object : TypeToken<MutableList<T>>() {}.type
-        val list: MutableList<T> = try { gson.fromJson(prefs.getString(key, "[]"), type) ?: mutableListOf() } catch (e: Exception) { mutableListOf() }
-        list.add(item)
+    private fun <T> saveLocal(key: String, item: T) {
+        val list: MutableList<T> = getLocal(key).toMutableList(); list.add(item)
         prefs.edit().putString(key, gson.toJson(list.distinct())).apply()
     }
     
-    private inline fun <reified T> getLocalList(key: String): List<T> {
+    private inline fun <reified T> getLocal(key: String): List<T> {
         val json = prefs.getString(key, "[]") ?: "[]"
         return try { gson.fromJson(json, object : TypeToken<List<T>>() {}.type) ?: emptyList() } catch (e: Exception) { emptyList() }
     }
     
-    // ============ UTILIDADES ============
     fun generateCode(prefix: String): String {
         val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         return "$prefix-${(1..6).map { chars[Random.nextInt(chars.length)] }.joinToString("")}"
