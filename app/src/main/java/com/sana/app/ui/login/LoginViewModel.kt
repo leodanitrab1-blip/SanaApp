@@ -13,37 +13,24 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(
-    private val repo: FirebaseRepository
-) : ViewModel() {
-
+class LoginViewModel @Inject constructor(private val repo: FirebaseRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    init {
-        viewModelScope.launch {
-            repo.initialize()
-            repo.syncFromFirebase() // 🔥 SINCRONIZAR AL ABRIR
-        }
-    }
+    init { viewModelScope.launch { repo.initialize(); repo.syncAll() } }
 
     fun tryLogin(code: String, loginType: LoginType) {
         if (code.isBlank()) { _uiState.value = LoginUiState(error = "Ingresa el código"); return }
-        val cleanCode = code.uppercase().trim()
-        val user = repo.findUserByCode(cleanCode)
+        val c = code.uppercase().trim()
+        val user = repo.findUserByCode(c)
         if (user != null && user.active) {
-            _uiState.value = LoginUiState(isSuccess = true, userId = cleanCode.hashCode().toLong(), userRole = user.role, userName = user.name)
+            _uiState.value = LoginUiState(isSuccess = true, userId = c.hashCode().toLong(), userRole = user.role, userName = user.name)
         } else {
-            // Buscar en escuelas
-            val schools = repo.getAllLocalSchools()
-            val school = schools.find { it.adminCode == cleanCode || it.code == cleanCode }
-            if (school != null) {
-                _uiState.value = LoginUiState(isSuccess = true, userId = cleanCode.hashCode().toLong(), userRole = Constants.ROLE_DIRECTOR, userName = school.directorName)
-            } else if (schools.any { it.teacherCodes.contains(cleanCode) }) {
-                _uiState.value = LoginUiState(isSuccess = true, userId = cleanCode.hashCode().toLong(), userRole = Constants.ROLE_TEACHER, userName = "Docente")
-            } else {
-                _uiState.value = LoginUiState(error = "Código no registrado")
-            }
+            val schools = repo.getAllSchools()
+            val school = schools.find { it.adminCode == c }
+            if (school != null) _uiState.value = LoginUiState(isSuccess = true, userId = c.hashCode().toLong(), userRole = Constants.ROLE_DIRECTOR, userName = school.directorName)
+            else if (schools.any { s -> s.teacherCodes.contains(c) }) _uiState.value = LoginUiState(isSuccess = true, userId = c.hashCode().toLong(), userRole = Constants.ROLE_TEACHER, userName = "Docente")
+            else _uiState.value = LoginUiState(error = "Código no registrado")
         }
     }
     
