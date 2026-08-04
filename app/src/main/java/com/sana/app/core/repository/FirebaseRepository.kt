@@ -58,7 +58,7 @@ class FirebaseRepository @Inject constructor(@ApplicationContext private val con
     fun saveParent(parent: ParentRecord) { save("parents", parent.code, parent); saveLocal("parents", parent) }
     fun getAllParents(): List<ParentRecord> = getLocal("parents")
     
-    private fun <T> saveLocal(key: String, item: T) {
+    private inline fun <reified T> saveLocal(key: String, item: T) {
         val list: MutableList<T> = getLocal(key).toMutableList(); list.add(item)
         prefs.edit().putString(key, gson.toJson(list)).apply()
     }
@@ -68,6 +68,7 @@ class FirebaseRepository @Inject constructor(@ApplicationContext private val con
         return try { gson.fromJson(json, object : TypeToken<List<T>>() {}.type) ?: emptyList() } catch (e: Exception) { emptyList() }
     }
     
+    fun deactivateUser(code: String) { val users = getAllUsers().toMutableList(); val i = users.indexOfFirst { it.code == code }; if (i >= 0) { users[i] = users[i].copy(active = false); prefs.edit().putString("users", gson.toJson(users)).apply(); save("users", code, users[i]) } }
     fun generateCode(prefix: String): String {
         val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         return "$prefix-${(1..6).map { chars[Random.nextInt(chars.length)] }.joinToString("")}"
