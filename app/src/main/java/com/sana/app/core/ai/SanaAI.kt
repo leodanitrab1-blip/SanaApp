@@ -17,14 +17,12 @@ class SanaAI(private val context: Context) {
             notifier.scheduleMotivationalNotifications(profile)
         }
         profile
-    }
     
-    suspend fun chat(userId: String, message: String): String = withContext(Dispatchers.IO) {
+    suspend fun chat(userId: String, message: String): String {
         var profile = memory.loadProfile(userId)
         val processed = processor.process(message, profile.preferredName, profile)
         learnFromInteraction(userId, message, processed, profile)
         engine.generateResponse(processed, profile, memory, userId)
-    }
     
     private fun learnFromInteraction(userId: String, message: String, processed: LanguageProcessor.ProcessedInput, profile: UserProfile) {
         if (processed.entities.containsKey("name")) {
@@ -39,7 +37,6 @@ class SanaAI(private val context: Context) {
         profile.totalConversations++
         profile.lastSeen = System.currentTimeMillis()
         memory.saveProfile(userId, profile)
-    }
     
     fun getProfile(userId: String): UserProfile = memory.loadProfile(userId)
     fun getEmotionalGrowth(userId: String): Float = memory.getEmotionalGrowth(userId)
