@@ -100,7 +100,7 @@ private fun MainScreen(name: String, diaryCount: Int, isDark: Boolean, onNavigat
         }
         
         LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp).padding(bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            item { MenuCard("🤖 Chat IA", Icons.Default.Psychology, "Próximamente", DarkPalette.Primary, DarkPalette.PrimaryVariant) { screen = "chat" } }
+            item { MenuCard("🤖 Chat IA", Icons.Default.Psychology, "Próximamente", DarkPalette.Primary, DarkPalette.PrimaryVariant) { onNavigate("chat") } }
             item { MenuCard("🫁 Respiración", Icons.Default.Air, "7 ejercicios", DarkPalette.Secondary, DarkPalette.SecondaryVariant) { onNavigate("breathing") } }
             item { MenuCard("📝 Diario", Icons.Default.Book, "$diaryCount entradas", DarkPalette.Tertiary, DarkPalette.TertiaryContainer) { onNavigate("diary") } }
             item { MenuCard("🆘 Ayuda", Icons.Default.Sos, "Líneas emergencia", DarkPalette.Error, DarkPalette.ErrorContainer) { onNavigate("emergency") } }
