@@ -65,7 +65,7 @@ fun StudentDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManage
         else { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(LightPalette.BackgroundGradientStart, LightPalette.BackgroundGradientEnd)))) }
 
         when (screen) {
-            "chat" -> AIChatScreen(userId, { screen = "main" }, isDark),
+            "chat" -> AIChatScreen(userId, { screen = "main" }, isDark)->
             "breathing" -> BreathingScreen(isDark) { screen = "main" }
             "diary" -> DiaryScreen(diaryEntries, isDark, { m, t, c -> diaryEntries = listOf(DiaryEntry(diaryEntries.size, m, t, c, SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date()))) + diaryEntries }, { id -> diaryEntries = diaryEntries.filter { it.id != id } }) { screen = "main" }
             "emergency" -> EmergencyScreen(isDark) { screen = "main" }
