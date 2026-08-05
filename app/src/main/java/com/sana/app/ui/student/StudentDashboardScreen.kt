@@ -65,7 +65,7 @@ fun StudentDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManage
         else { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(LightPalette.BackgroundGradientStart, LightPalette.BackgroundGradientEnd)))) }
 
         when (screen) {
-            "chat" -> AIChatScreen(userId, { screen = "main" }, isDark)
+            "chat" -> { ChatScreenSimple(userId, isDark) { screen = "main" } }
             "breathing" -> BreathingScreen(isDark) { screen = "main" }
             "diary" -> DiaryScreen(diaryEntries, isDark, { m, t, c -> diaryEntries = listOf(DiaryEntry(diaryEntries.size, m, t, c, SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date()))) + diaryEntries }, { id -> diaryEntries = diaryEntries.filter { it.id != id } }) { screen = "main" }
             "emergency" -> EmergencyScreen(isDark) { screen = "main" }
@@ -267,4 +267,56 @@ private fun MenuCard(title: String, icon: ImageVector, desc: String, c1: Color, 
             Column(horizontalAlignment = Alignment.CenterHorizontally) { Icon(icon, title, modifier = Modifier.size(44.dp), tint = Color.White); Spacer(Modifier.height(8.dp)); Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.White, textAlign = TextAlign.Center); Text(desc, style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.85f), textAlign = TextAlign.Center) }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ChatScreenSimple(userId: Long, isDark: Boolean, onBack: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val sanaAI = remember { com.sana.app.core.ai.SanaAI(context) }
+    var input by remember { mutableStateOf("") }
+    var messages by remember { mutableStateOf(listOf("Sana" to "¡Hola! 🌟 Soy Sana, tu asistente emocional. ¿Cómo te sientes hoy?")) }
+    var isLoading by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val listState = rememberLazyListState()
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopAppBar(title = { Text("🤖 Sana AI", fontWeight = FontWeight.Bold) }, navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Volver") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkPalette.PrimaryContainer))
+        LazyColumn(state = listState, modifier = Modifier.weight(1f).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            val s = messages.size
+            for (i in 0 until s) {
+                val (role, msg) = messages[i]
+                item(key = "m_$i") {
+                    val isUser = role == "user"
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start) {
+                        if (!isUser) { Surface(modifier = Modifier.size(30.dp), shape = CircleShape, color = DarkPalette.Primary) { Box(contentAlignment = Alignment.Center) { Text("🤖") } }; Spacer(Modifier.width(8.dp)) }
+                        Card(modifier = Modifier.widthIn(max = 260.dp), shape = if (isUser) RoundedCornerShape(16.dp, 16.dp, 4.dp, 16.dp) else RoundedCornerShape(4.dp, 16.dp, 16.dp, 16.dp), colors = CardDefaults.cardColors(containerColor = if (isUser) DarkPalette.Primary else if (isDark) DarkPalette.SurfaceVariant else LightPalette.SurfaceVariant)) {
+                            Text(msg, modifier = Modifier.padding(12.dp), color = if (isUser) Color.White else if (isDark) DarkPalette.OnSurface else LightPalette.OnSurface)
+                        }
+                    }
+                }
+            }
+            if (isLoading) { item(key = "load") { Row { CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp); Spacer(Modifier.width(8.dp)); Text("Escribiendo...") } } }
+        }
+        Surface(modifier = Modifier.fillMaxWidth(), shadowElevation = 8.dp) {
+            Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                OutlinedTextField(value = input, onValueChange = { input = it }, modifier = Modifier.weight(1f), placeholder = { Text("Escribe tu mensaje...") }, shape = RoundedCornerShape(24.dp), maxLines = 3)
+                Spacer(Modifier.width(8.dp))
+                IconButton(onClick = {
+                    if (input.isNotBlank() && !isLoading) {
+                        val msg = input.trim()
+                        messages = messages + ("user" to msg)
+                        input = ""
+                        isLoading = true
+                        scope.launch {
+                            try { messages = messages + ("Sana" to sanaAI.chat(userId.toString(), msg)) }
+                            catch (e: Exception) { messages = messages + ("Sana" to "Estoy aquí para ti 💜") }
+                            isLoading = false
+                        }
+                    }
+                }, modifier = Modifier.size(48.dp).clip(CircleShape).background(if (input.isNotBlank()) DarkPalette.Primary else DarkPalette.SurfaceVariant), enabled = input.isNotBlank() && !isLoading) { Icon(Icons.Default.Send, "Enviar", tint = Color.White) }
+            }
+        }
+    }
+    LaunchedEffect(messages.size) { if (messages.isNotEmpty()) listState.animateScrollToItem(messages.size - 1) }
 }
