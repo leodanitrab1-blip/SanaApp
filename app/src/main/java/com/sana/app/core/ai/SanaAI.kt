@@ -19,11 +19,12 @@ class SanaAI(private val context: Context) {
         profile
     }
     
-    suspend fun chat(userId: String, message: String): String = withContext(Dispatchers.IO) {
+    suspend fun chat(userId: String, message: String): String = withContext(Dispatchers.IO) { try {
         var profile = memory.loadProfile(userId)
         val processed = processor.process(message, profile.preferredName, profile)
         learnFromInteraction(userId, message, processed, profile)
         engine.generateResponse(processed, profile, memory, userId)
+        } catch (e: Exception) { "Estoy aquí para ti 💜 Cuéntame cómo te sientes." }
     }
     
     private fun learnFromInteraction(userId: String, message: String, processed: LanguageProcessor.ProcessedInput, profile: UserProfile) {
