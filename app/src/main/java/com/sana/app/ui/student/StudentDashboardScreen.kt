@@ -1,7 +1,7 @@
 import com.sana.app.ui.student.AIChatScreen
+import com.sana.app.ui.student.AIChatScreen
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.sana.app.ui.student
 
 import android.media.MediaPlayer
 import androidx.compose.animation.*
