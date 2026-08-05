@@ -64,8 +64,8 @@ fun StudentDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManage
         if (isDark) { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(DarkPalette.BackgroundGradientStart, DarkPalette.BackgroundGradientEnd)))); StarryBackground(starColor = DarkPalette.StarDim, starCount = 100) }
         else { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(LightPalette.BackgroundGradientStart, LightPalette.BackgroundGradientEnd)))) }
 
-            "chat" -> AIChatScreen(userId = userId, onBack = { screen = "main" }, isDark = isDark)
         when (screen) {
+            "chat" -> AIChatScreen(userId = userId, onBack = { screen = "main" }, isDark = isDark)
             "breathing" -> BreathingScreen(isDark) { screen = "main" }
             "diary" -> DiaryScreen(diaryEntries, isDark, { m, t, c -> diaryEntries = listOf(DiaryEntry(diaryEntries.size, m, t, c, SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date()))) + diaryEntries }, { id -> diaryEntries = diaryEntries.filter { it.id != id } }) { screen = "main" }
             "emergency" -> EmergencyScreen(isDark) { screen = "main" }
