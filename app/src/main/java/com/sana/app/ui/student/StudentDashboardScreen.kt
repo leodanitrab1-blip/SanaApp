@@ -41,6 +41,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.foundation.lazy.rememberLazyListState
 import com.sana.app.ui.student.AIChatScreen
 
 data class DiaryEntry(val id: Int, val mood: String, val title: String, val content: String, val date: String)
