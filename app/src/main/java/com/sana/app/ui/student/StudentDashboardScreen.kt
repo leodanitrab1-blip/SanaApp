@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-import com.sana.app.ui.student.AIChatScreen
+package com.sana.app.ui.student
 
 import android.media.MediaPlayer
 import androidx.compose.animation.*
@@ -41,6 +41,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import com.sana.app.ui.student.AIChatScreen
 
 data class DiaryEntry(val id: Int, val mood: String, val title: String, val content: String, val date: String)
 data class BreathExercise(val id: Int, val name: String, val desc: String, val inhale: Int, val hold: Int, val exhale: Int, val rounds: Int)
@@ -63,8 +64,8 @@ fun StudentDashboardScreen(userId: Long, onNavigateBack: () -> Unit, themeManage
         if (isDark) { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(DarkPalette.BackgroundGradientStart, DarkPalette.BackgroundGradientEnd)))); StarryBackground(starColor = DarkPalette.StarDim, starCount = 100) }
         else { Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(LightPalette.BackgroundGradientStart, LightPalette.BackgroundGradientEnd)))) }
 
-        when (screen) {
             "chat" -> AIChatScreen(userId = userId, onBack = { screen = "main" }, isDark = isDark)
+        when (screen) {
             "breathing" -> BreathingScreen(isDark) { screen = "main" }
             "diary" -> DiaryScreen(diaryEntries, isDark, { m, t, c -> diaryEntries = listOf(DiaryEntry(diaryEntries.size, m, t, c, SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date()))) + diaryEntries }, { id -> diaryEntries = diaryEntries.filter { it.id != id } }) { screen = "main" }
             "emergency" -> EmergencyScreen(isDark) { screen = "main" }
